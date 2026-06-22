@@ -1,0 +1,5406 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Time Time Table Dashboard</title>
+    <!-- Mobile Home Screen / T Icon Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#166534">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Time Table">
+    <meta name="apple-mobile-web-app-title" content="Time Table">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%0A%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%2296%22%20fill%3D%22%23166534%22/%3E%0A%3Crect%20x%3D%2270%22%20y%3D%2270%22%20width%3D%22372%22%20height%3D%22372%22%20rx%3D%2280%22%20fill%3D%22%23ffffff%22/%3E%0A%3Crect%20x%3D%2270%22%20y%3D%2270%22%20width%3D%22372%22%20height%3D%22110%22%20rx%3D%2280%22%20fill%3D%22%2315803d%22/%3E%0A%3Cpath%20d%3D%22M170%20235h172v48h-61v145h-50V283h-61z%22%20fill%3D%22%23166534%22/%3E%0A%3C/svg%3E">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+    <style>
+:root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #667085;
+    --brand: #15803d;
+    --brand-dark: #166534;
+    --blue: #1d4ed8;
+    --soft: #ecfdf5;
+    --border: #d9e2f2;
+    --period: #f0fdf4;
+    --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .app-shell {
+    width: min(1180px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 22px 0 36px;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #166534, #16a34a);
+    color: white;
+    padding: 26px;
+    border-radius: 26px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .hero-left {
+    min-width: 0;
+  }
+
+  .eyebrow {
+    margin: 0 0 8px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(26px, 5vw, 42px);
+    line-height: 1.05;
+  }
+
+  .subtitle {
+    margin: 12px 0 0;
+    font-size: 15px;
+    opacity: 0.94;
+  }
+
+  .sync-card {
+    min-width: 220px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    padding: 13px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .live-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: #bbf7d0;
+    box-shadow: 0 0 0 8px rgba(187, 247, 208, 0.24);
+    flex: 0 0 auto;
+  }
+
+  .sync-label {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.86;
+  }
+
+  .sync-time {
+    margin: 4px 0 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+
+  .academic-selector-card.hidden-box {
+    display: none !important;
+  }
+
+  .academic-selector-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin: 18px 0;
+  }
+
+  .academic-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .academic-selector-header h2 {
+    color: var(--brand-dark);
+  }
+
+  .academic-selector-header p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .academic-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  .source-chip {
+    min-width: 210px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 18px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .source-chip span {
+    display: block;
+    color: var(--brand-dark);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+  }
+
+  .source-chip strong {
+    display: block;
+    color: var(--brand-dark);
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+
+  .nav-card,
+  .view-switch-card,
+  .control-panel,
+  .section-card,
+  .selected-course-card,
+  .home-hero-card,
+  .home-stat,
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin: 18px 0;
+  }
+
+  .nav-card {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .nav-btn,
+  .view-btn,
+  .secondary-btn {
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    color: var(--text);
+    padding: 12px 13px;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .nav-btn.active,
+  .view-btn.active {
+    background: var(--brand);
+    color: white;
+    border-color: var(--brand);
+  }
+
+  .today-btn {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .print-btn {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+
+  .admin-btn {
+    background: #fdf2f8;
+    color: #be185d;
+  }
+
+  .view-switch-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .home-section {
+    display: block;
+  }
+
+  .home-hero-card {
+    background: linear-gradient(135deg, #f0fdf4, #ffffff);
+    border-color: #bbf7d0;
+    text-align: center;
+  }
+
+  .home-hero-card h2 {
+    color: var(--brand-dark);
+    font-size: clamp(25px, 4vw, 36px);
+  }
+
+  .home-hero-card p {
+    color: var(--muted);
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .home-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+
+  .home-stats-grid,
+  .home-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .home-stat {
+    margin: 0;
+    text-align: center;
+  }
+
+  .home-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .home-stat strong {
+    color: var(--brand-dark);
+    font-size: 27px;
+    font-weight: 900;
+  }
+
+  .feature-card {
+    margin: 18px 0 0;
+  }
+
+  .feature-card h3 {
+    margin: 0 0 8px;
+    color: var(--brand-dark);
+  }
+
+  .feature-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: 14px;
+  }
+
+  .control-header,
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .control-header p,
+  .section-title-row p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .primary-btn {
+    border: 0;
+    background: var(--brand);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .primary-btn:hover {
+    background: var(--brand-dark);
+  }
+
+  .secondary-btn:hover,
+  .nav-btn:hover,
+  .view-btn:hover {
+    filter: brightness(0.97);
+  }
+
+  .filter-row {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 14px;
+  }
+
+  .filter-row.lecturer-mode {
+    grid-template-columns: 1.6fr 1fr;
+  }
+
+  .hidden-box {
+    display: none !important;
+  }
+
+  label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--brand-dark);
+  }
+
+  select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    font-size: 14px;
+    background: #fffef0;
+    font-weight: 700;
+  }
+
+  select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.14);
+  }
+
+  .selected-course-card {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    text-align: center;
+  }
+
+  .selected-label {
+    margin: 0 0 8px;
+    color: var(--brand-dark);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  #selectedTitle {
+    color: var(--brand-dark);
+  }
+
+  .click-hint {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .notice-card {
+    margin: 14px auto 0;
+    padding: 11px 13px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 800;
+    max-width: 760px;
+  }
+
+  .holiday-notice {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #c2410c;
+  }
+
+  .neutral-notice {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .leave-summary-card {
+    background: #fdf2f8;
+    border: 1px solid #f9a8d4;
+    color: #be185d;
+  }
+
+  .leave-summary-card.no-leave {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+  }
+
+  .workload-box {
+    min-width: 200px;
+    background: #fdf2f8;
+    border: 1px solid #f9a8d4;
+    border-radius: 18px;
+    padding: 12px 15px;
+    text-align: center;
+  }
+
+  .workload-box span {
+    display: block;
+    color: #be185d;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+  }
+
+  .workload-box strong {
+    display: block;
+    color: #db2777;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+
+  .slide-up-animate {
+    animation: slideUpTimetable 0.45s ease-out;
+  }
+
+  @keyframes slideUpTimetable {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: white;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    min-width: 780px;
+  }
+
+  th,
+  td {
+    border: 1px solid #22c55e;
+    padding: 6px;
+    font-size: 11px;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--period);
+    color: var(--brand-dark);
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .day-cell {
+    width: 82px;
+    background: #f8fafc;
+    font-weight: 900;
+    color: #0f766e;
+    text-transform: uppercase;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .period-cell {
+    min-width: 110px;
+    height: 74px;
+  }
+
+  .class-block {
+    border-left: 4px solid var(--subject-color);
+    background: var(--subject-bg);
+    border-radius: 10px;
+    padding: 6px 7px;
+    margin-bottom: 6px;
+  }
+
+  .class-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .subject-link {
+    display: inline;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: 11px;
+    text-align: left;
+    font-weight: 900;
+    color: var(--subject-color);
+    line-height: 1.25;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .subject-link:hover {
+    filter: brightness(0.85);
+  }
+
+  .subject-link.no-syllabus {
+    cursor: not-allowed;
+    text-decoration: none;
+    opacity: 0.75;
+  }
+
+  .course-text,
+  .lecturer-text,
+  .semester-text {
+    line-height: 1.25;
+    margin-top: 4px;
+    font-size: 10.5px;
+  }
+
+  .course-text {
+    color: #0f172a;
+    font-weight: 800;
+  }
+
+  .lecturer-text {
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  .semester-text {
+    color: #475569;
+    font-weight: 700;
+  }
+
+  .leave-badge {
+    display: inline-block;
+    margin-top: 5px;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    border-radius: 999px;
+    padding: 4px 7px;
+    font-size: 9.5px;
+    font-weight: 900;
+  }
+
+  .syllabus-small {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 9.5px;
+    color: #475569;
+    font-weight: 800;
+  }
+
+  .blank-period {
+    background: #ffffff;
+  }
+
+  .empty-period {
+    color: #94a3b8;
+    text-align: center;
+    padding-top: 14px;
+    font-size: 11px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .class-card {
+    border: 1px solid var(--border);
+    background: var(--subject-bg);
+    border-radius: 20px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .class-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: var(--subject-color);
+  }
+
+  .class-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .day-pill {
+    background: #ffffff;
+    color: var(--subject-color);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .time-text {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .subject-card-link {
+    display: inline;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0 0 8px;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--subject-color);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    line-height: 1.35;
+  }
+
+  .subject-card-link.no-syllabus {
+    cursor: not-allowed;
+    text-decoration: none;
+    opacity: 0.75;
+  }
+
+  .meta {
+    margin: 5px 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .meta strong {
+    color: var(--text);
+  }
+
+  .empty-state {
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    background: #fbfdff;
+    grid-column: 1 / -1;
+  }
+
+
+  .print-page-section {
+    margin: 18px 0;
+  }
+
+  .print-control-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+  }
+
+  .print-control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .print-control-header p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .print-mode-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .print-filter-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .clean-print-area {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    font-family: "Times New Roman", Times, serif;
+  }
+
+  .clean-print-title-block {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .clean-print-title-block h2 {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 24px;
+    line-height: 1.2;
+    margin: 0;
+    color: #111827;
+    font-weight: 900;
+  }
+
+  .clean-print-title-block p {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 18px;
+    margin: 6px 0 0;
+    color: #111827;
+    font-weight: 700;
+  }
+
+
+  .clean-print-title-block {
+    position: relative;
+  }
+
+  .clean-print-period-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 132px;
+    border: 1px solid #111827;
+    border-radius: 8px;
+    padding: 6px 8px;
+    text-align: center;
+    background: #ffffff;
+    font-family: "Times New Roman", Times, serif;
+  }
+
+  .clean-print-period-box span {
+    display: block;
+    font-size: 11px;
+    line-height: 1.05;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .clean-print-period-box strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 900;
+    color: #111827;
+  }
+
+
+  .clean-print-table {
+    width: 100%;
+    min-width: 980px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-family: "Times New Roman", Times, serif;
+    background: white;
+  }
+
+  .clean-print-table th,
+  .clean-print-table td {
+    border: 1.5px solid #111827;
+    padding: 8px;
+    vertical-align: top;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12px;
+    line-height: 1.15;
+  }
+
+  .clean-print-table th {
+    background: #e5e7eb;
+    color: #111827;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .clean-print-day {
+    width: 90px;
+    text-align: center;
+    vertical-align: middle !important;
+    font-weight: 900;
+    background: #f3f4f6;
+  }
+
+  .clean-print-cell {
+    height: 104px;
+  }
+
+  .clean-print-block {
+    border-radius: 6px;
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background: #ffffff;
+    border: 1px solid var(--print-subject-border);
+    color: var(--print-subject-color);
+    min-height: 34px;
+    overflow: hidden;
+  }
+
+  .clean-print-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .clean-print-subject {
+    font-weight: 900;
+    font-size: 12px;
+    line-height: 1.12;
+    color: var(--print-subject-color);
+  }
+
+  .clean-print-lecturer {
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.12;
+    margin-top: 3px;
+    color: #111827;
+  }
+
+  .clean-print-empty {
+    color: #6b7280;
+    text-align: center;
+    padding-top: 26px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 700px) {
+    .print-control-header {
+      flex-direction: column;
+    }
+
+    .print-mode-row {
+      grid-template-columns: 1fr;
+    }
+
+    #cleanPrintBtn {
+      width: 100%;
+    }
+
+    .clean-print-area {
+      overflow-x: auto;
+    }
+  }
+
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.52);
+    z-index: 100;
+    padding: 22px;
+    overflow-y: auto;
+  }
+
+  .modal-card {
+    width: min(780px, 100%);
+    margin: 40px auto;
+    background: white;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+
+  .modal-close {
+    border: 0;
+    background: #fee2e2;
+    color: #b91c1c;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .admin-guide h3 {
+    margin: 18px 0 7px;
+    color: var(--brand-dark);
+  }
+
+  .admin-guide p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+
+
+  .admin-login-modal-card {
+    width: min(920px, 96vw);
+  }
+
+  .admin-login-panel,
+  .admin-entry-panel {
+    margin-top: 16px;
+  }
+
+  .admin-note {
+    margin: 0 0 14px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .admin-form-grid,
+  .admin-entry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .admin-entry-card {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 16px;
+    background: #fbfdff;
+  }
+
+  .admin-entry-card h3,
+  .admin-panel-top h3,
+  .admin-tips-box h3 {
+    margin: 0 0 8px;
+    color: var(--brand-dark);
+  }
+
+  .admin-entry-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+
+  .admin-input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    font-size: 14px;
+    background: #fffef0;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .admin-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.14);
+  }
+
+  .admin-action-btn {
+    margin-top: 4px;
+  }
+
+  .admin-message {
+    min-height: 22px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .admin-message.success {
+    color: #166534;
+  }
+
+  .admin-message.error {
+    color: #b91c1c;
+  }
+
+  .admin-panel-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .admin-button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+
+  .admin-report-section {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+  }
+
+  .admin-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .admin-report-header h3 {
+    margin: 0 0 6px;
+    color: var(--brand-dark);
+  }
+
+  .admin-report-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .admin-report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .admin-report-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .admin-report-card h3 {
+    margin: 0 0 10px;
+    color: var(--brand-dark);
+    font-size: 17px;
+  }
+
+  .admin-report-table-wrap {
+    max-height: 260px;
+    overflow: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .admin-report-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    background: white;
+  }
+
+  .admin-report-table th,
+  .admin-report-table td {
+    border: 1px solid var(--border);
+    padding: 9px 10px;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .admin-report-table th {
+    position: sticky;
+    top: 0;
+    background: #f0fdf4;
+    color: var(--brand-dark);
+    font-weight: 900;
+    z-index: 1;
+  }
+
+  .admin-empty-report {
+    padding: 18px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+    background: white;
+  }
+
+  @media (max-width: 700px) {
+    .admin-report-header {
+      flex-direction: column;
+    }
+
+    .admin-report-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #adminReportRefreshBtn {
+      width: 100%;
+    }
+  }
+
+
+  .admin-tips-box {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+
+  .admin-tips-box ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: 13px;
+  }
+
+  @media (max-width: 700px) {
+    .admin-form-grid,
+    .admin-entry-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-panel-top {
+      flex-direction: column;
+    }
+
+    .admin-button-row .primary-btn,
+    .admin-button-row .secondary-btn {
+      width: 100%;
+    }
+  }
+
+
+  .syllabus-modal-card {
+    width: min(1050px, 96vw);
+    height: min(86vh, 760px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .syllabus-frame-wrap {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f8fafc;
+    flex: 1;
+    min-height: 420px;
+  }
+
+  .syllabus-frame-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: white;
+  }
+
+  .syllabus-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  @media (max-width: 560px) {
+  
+  .admin-login-modal-card {
+    width: min(920px, 96vw);
+  }
+
+  .admin-login-panel,
+  .admin-entry-panel {
+    margin-top: 16px;
+  }
+
+  .admin-note {
+    margin: 0 0 14px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .admin-form-grid,
+  .admin-entry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .admin-entry-card {
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 16px;
+    background: #fbfdff;
+  }
+
+  .admin-entry-card h3,
+  .admin-panel-top h3,
+  .admin-tips-box h3 {
+    margin: 0 0 8px;
+    color: var(--brand-dark);
+  }
+
+  .admin-entry-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+
+  .admin-input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    font-size: 14px;
+    background: #fffef0;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .admin-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.14);
+  }
+
+  .admin-action-btn {
+    margin-top: 4px;
+  }
+
+  .admin-message {
+    min-height: 22px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .admin-message.success {
+    color: #166534;
+  }
+
+  .admin-message.error {
+    color: #b91c1c;
+  }
+
+  .admin-panel-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .admin-button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+
+  .admin-report-section {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+  }
+
+  .admin-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .admin-report-header h3 {
+    margin: 0 0 6px;
+    color: var(--brand-dark);
+  }
+
+  .admin-report-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .admin-report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .admin-report-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .admin-report-card h3 {
+    margin: 0 0 10px;
+    color: var(--brand-dark);
+    font-size: 17px;
+  }
+
+  .admin-report-table-wrap {
+    max-height: 260px;
+    overflow: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .admin-report-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    background: white;
+  }
+
+  .admin-report-table th,
+  .admin-report-table td {
+    border: 1px solid var(--border);
+    padding: 9px 10px;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .admin-report-table th {
+    position: sticky;
+    top: 0;
+    background: #f0fdf4;
+    color: var(--brand-dark);
+    font-weight: 900;
+    z-index: 1;
+  }
+
+  .admin-empty-report {
+    padding: 18px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+    background: white;
+  }
+
+  @media (max-width: 700px) {
+    .admin-report-header {
+      flex-direction: column;
+    }
+
+    .admin-report-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #adminReportRefreshBtn {
+      width: 100%;
+    }
+  }
+
+
+  .admin-tips-box {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+
+  .admin-tips-box ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: 13px;
+  }
+
+  @media (max-width: 700px) {
+    .admin-form-grid,
+    .admin-entry-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-panel-top {
+      flex-direction: column;
+    }
+
+    .admin-button-row .primary-btn,
+    .admin-button-row .secondary-btn {
+      width: 100%;
+    }
+  }
+
+
+  .syllabus-modal-card {
+      width: 96vw;
+      height: 88vh;
+      margin: 18px auto;
+      padding: 16px;
+    }
+
+    .syllabus-frame-wrap {
+      min-height: 0;
+    }
+
+    .syllabus-modal-actions {
+      flex-direction: column;
+    }
+  }
+
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    background: #111827;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    display: none;
+    z-index: 101;
+  }
+
+  .toast.show {
+    display: block;
+  }
+
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid rgba(15, 23, 42, 0.12);
+    margin: 8px 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .sync-card {
+      width: 100%;
+    }
+
+    .nav-card {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .academic-filter-row {
+      grid-template-columns: 1fr;
+    }
+
+    .academic-selector-header {
+      flex-direction: column;
+    }
+
+    .source-chip {
+      width: 100%;
+    }
+
+    .home-stats-grid,
+    .home-feature-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filter-row,
+    .filter-row.lecturer-mode {
+      grid-template-columns: 1fr;
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .app-shell {
+      width: min(100% - 12px, 1180px);
+      padding-top: 8px;
+    }
+
+    .hero {
+      padding: 18px;
+      border-radius: 20px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+    }
+
+  
+  .academic-selector-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin: 18px 0;
+  }
+
+  .academic-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .academic-selector-header h2 {
+    color: var(--brand-dark);
+  }
+
+  .academic-selector-header p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .academic-filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+
+  .source-chip {
+    min-width: 210px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 18px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .source-chip span {
+    display: block;
+    color: var(--brand-dark);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+  }
+
+  .source-chip strong {
+    display: block;
+    color: var(--brand-dark);
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+
+  .nav-card,
+    .view-switch-card {
+      grid-template-columns: 1fr;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .nav-btn,
+    .view-btn,
+    .secondary-btn {
+      padding: 10px 12px;
+      font-size: 12.5px;
+      border-radius: 13px;
+    }
+
+    .home-stats-grid,
+    .home-feature-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .control-panel,
+    .section-card,
+    .selected-course-card,
+    .home-hero-card {
+      padding: 12px;
+      border-radius: 18px;
+      margin: 12px 0;
+    }
+
+    .control-header,
+    .section-title-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    .control-header p,
+    .section-title-row p,
+    .click-hint {
+      font-size: 12px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      width: 100%;
+      padding: 10px 14px;
+    }
+
+    select {
+      padding: 11px 12px;
+      font-size: 13px;
+    }
+
+    .workload-box {
+      width: 100%;
+      padding: 10px 12px;
+    }
+
+    .workload-box strong {
+      font-size: 20px;
+    }
+
+    table {
+      min-width: 660px;
+    }
+
+    th,
+    td {
+      padding: 4px;
+      font-size: 9.5px;
+    }
+
+    th {
+      line-height: 1.15;
+    }
+
+    .day-cell {
+      width: 62px;
+      font-size: 9.5px;
+      line-height: 1.1;
+    }
+
+    .period-cell {
+      min-width: 92px;
+      height: 58px;
+    }
+
+    .class-block {
+      border-left-width: 3px;
+      border-radius: 8px;
+      padding: 5px 6px;
+      margin-bottom: 5px;
+    }
+
+    .subject-link {
+      font-size: 9.5px;
+      line-height: 1.18;
+      text-underline-offset: 2px;
+    }
+
+    .course-text,
+    .lecturer-text,
+    .semester-text {
+      font-size: 9px;
+      line-height: 1.18;
+      margin-top: 3px;
+    }
+
+    .syllabus-small {
+      display: none;
+    }
+
+    .leave-badge {
+      font-size: 8.5px;
+      padding: 3px 6px;
+      margin-top: 4px;
+    }
+
+    .blank-period {
+    background: #ffffff;
+  }
+
+  .empty-period {
+      font-size: 9.5px;
+      padding-top: 10px;
+    }
+
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .class-card {
+      padding: 13px;
+      border-radius: 17px;
+    }
+
+    .subject-card-link {
+      font-size: 16px;
+    }
+
+    .meta {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    table {
+      min-width: 610px;
+    }
+
+    th,
+    td {
+      padding: 3px;
+      font-size: 8.8px;
+    }
+
+    .day-cell {
+      width: 56px;
+      font-size: 8.8px;
+    }
+
+    .period-cell {
+      min-width: 84px;
+    }
+
+    .subject-link {
+      font-size: 8.8px;
+    }
+
+    .course-text,
+    .lecturer-text,
+    .semester-text {
+      font-size: 8.4px;
+    }
+  }
+
+
+  .admin-report-table {
+    min-width: 0 !important;
+  }
+
+  .admin-report-table th,
+  .admin-report-table td {
+    border-color: var(--border) !important;
+    padding: 9px 10px !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+  }
+
+
+  @media print {
+    @page {
+      size: A4 landscape;
+      margin: 5mm;
+    }
+
+    html,
+    body {
+      background: #ffffff !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 287mm !important;
+      max-width: 287mm !important;
+      height: 200mm !important;
+      overflow: hidden !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .hero,
+    .nav-card,
+    .academic-selector-card,
+    #academicSelectorCard,
+    .home-section,
+    #homeSection,
+    .view-switch-card,
+    #viewSwitchCard,
+    .control-panel,
+    #controlPanel,
+    .selected-course-card,
+    #selectedCard,
+    .section-card,
+    #timetableSection,
+    #cardSection,
+    .card-section,
+    .footer,
+    .toast,
+    .modal-overlay,
+    .print-control-card {
+      display: none !important;
+    }
+
+    .app-shell {
+      width: 287mm !important;
+      max-width: 287mm !important;
+      height: 200mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      overflow: hidden !important;
+    }
+
+    #printSection {
+      display: block !important;
+      width: 287mm !important;
+      max-width: 287mm !important;
+      height: 200mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      overflow: hidden !important;
+      page-break-before: avoid !important;
+      page-break-after: avoid !important;
+      page-break-inside: avoid !important;
+      break-before: avoid !important;
+      break-after: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    #cleanPrintArea {
+      display: block !important;
+      position: fixed !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 287mm !important;
+      max-width: 287mm !important;
+      height: 199mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      overflow: hidden !important;
+      font-family: "Times New Roman", Times, serif !important;
+      background: #ffffff !important;
+    }
+
+    .clean-print-title-block {
+      position: relative !important;
+      height: 14mm !important;
+      margin: 0 0 2mm 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+
+    .clean-print-title-block h2 {
+      font-size: 17px !important;
+      line-height: 1.05 !important;
+      margin: 0 !important;
+      padding: 0 40mm !important;
+      font-family: "Times New Roman", Times, serif !important;
+      font-weight: 900 !important;
+      color: #111827 !important;
+    }
+
+    .clean-print-title-block p {
+      font-size: 13px !important;
+      line-height: 1.05 !important;
+      margin: 2px 0 0 !important;
+      padding: 0 40mm !important;
+      font-family: "Times New Roman", Times, serif !important;
+      font-weight: 700 !important;
+      color: #111827 !important;
+    }
+
+    .clean-print-period-box {
+      position: absolute !important;
+      top: 0 !important;
+      right: 0 !important;
+      min-width: 34mm !important;
+      border: 0.8px solid #111827 !important;
+      border-radius: 4px !important;
+      padding: 2mm !important;
+      background: #ffffff !important;
+      text-align: center !important;
+      font-family: "Times New Roman", Times, serif !important;
+    }
+
+    .clean-print-period-box span {
+      display: block !important;
+      font-size: 9px !important;
+      line-height: 1.05 !important;
+      font-weight: 700 !important;
+      color: #111827 !important;
+    }
+
+    .clean-print-period-box strong {
+      display: block !important;
+      margin-top: 1px !important;
+      font-size: 14px !important;
+      line-height: 1 !important;
+      font-weight: 900 !important;
+      color: #111827 !important;
+    }
+
+    #cleanPrintTableContainer {
+      display: block !important;
+      width: 287mm !important;
+      max-width: 287mm !important;
+      height: 183mm !important;
+      overflow: hidden !important;
+    }
+
+    .clean-print-table {
+      width: 287mm !important;
+      max-width: 287mm !important;
+      min-width: 0 !important;
+      height: 183mm !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      font-family: "Times New Roman", Times, serif !important;
+      background: #ffffff !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    .clean-print-table thead {
+      display: table-header-group !important;
+    }
+
+    .clean-print-table tbody {
+      display: table-row-group !important;
+    }
+
+    .clean-print-table tbody tr {
+      height: 28mm !important;
+      min-height: 28mm !important;
+      max-height: 28mm !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    .clean-print-table th,
+    .clean-print-table td {
+      border: 0.85px solid #111827 !important;
+      padding: 2.4px !important;
+      font-family: "Times New Roman", Times, serif !important;
+      font-size: 11.4px !important;
+      line-height: 1.04 !important;
+      vertical-align: top !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    .clean-print-table th {
+      height: 7mm !important;
+      color: #111827 !important;
+      text-align: center !important;
+      font-weight: 900 !important;
+      vertical-align: middle !important;
+    }
+
+    .clean-print-day {
+      width: 25mm !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      font-weight: 900 !important;
+      color: #111827 !important;
+    }
+
+    .clean-print-cell {
+      height: 28mm !important;
+      max-height: 28mm !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+    }
+
+    .clean-print-block {
+      border-radius: 3px !important;
+      padding: 2px 3px !important;
+      margin: 0 0 1.6px 0 !important;
+      background: #ffffff !important;
+      border: 0.7px solid var(--print-subject-border) !important;
+      color: var(--print-subject-color) !important;
+      min-height: 0 !important;
+      max-height: 25mm !important;
+      overflow: hidden !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .clean-print-subject,
+    .clean-print-lecturer {
+      font-family: "Times New Roman", Times, serif !important;
+      font-size: 11.3px !important;
+      line-height: 1.04 !important;
+      overflow-wrap: anywhere !important;
+      background: transparent !important;
+    }
+
+    .clean-print-subject {
+      font-weight: 900 !important;
+      color: var(--print-subject-color) !important;
+    }
+
+    .clean-print-lecturer {
+      font-weight: 700 !important;
+      color: #111827 !important;
+      margin-top: 1px !important;
+    }
+
+    .clean-print-empty {
+      font-family: "Times New Roman", Times, serif !important;
+      font-size: 11.3px !important;
+      line-height: 1.04 !important;
+      padding-top: 8mm !important;
+      color: #6b7280 !important;
+      text-align: center !important;
+      background: transparent !important;
+    }
+
+    .empty-state {
+      display: none !important;
+    }
+  }
+    
+/* =========================================================
+   MOBILE PORTRAIT REFINEMENT - GitHub Single File Version
+   Added for better mobile viewing
+   ========================================================= */
+
+@media screen and (max-width: 600px) and (orientation: portrait) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .hero {
+    padding: 16px 14px;
+    gap: 12px;
+    border-radius: 18px;
+  }
+
+  .hero-left h1 {
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .hero-left .subtitle,
+  .subtitle {
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+
+  .sync-card {
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .sync-label {
+    font-size: 0.68rem;
+  }
+
+  .sync-time {
+    font-size: 0.75rem;
+  }
+
+  /* Navigation buttons - smaller and mobile friendly */
+  .nav-card {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  .nav-btn {
+    min-height: 36px;
+    padding: 8px 6px;
+    font-size: 0.68rem;
+    line-height: 1.15;
+    border-radius: 11px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .today-btn,
+  .print-btn,
+  .admin-btn {
+    font-size: 0.66rem;
+  }
+
+  /* Hide Source Sheet display on mobile portrait */
+  .source-chip {
+    display: none !important;
+  }
+
+  .academic-selector-card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .academic-selector-header {
+    gap: 8px;
+  }
+
+  .academic-selector-header h2 {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .academic-selector-header p {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  .academic-filter-row,
+  .filter-row,
+  .print-filter-row,
+  .admin-form-grid,
+  .admin-entry-grid,
+  .admin-report-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  label {
+    font-size: 0.72rem;
+  }
+
+  select,
+  input,
+  .admin-input {
+    width: 100%;
+    min-height: 38px;
+    font-size: 0.78rem;
+  }
+
+  .home-hero-card,
+  .section-card,
+  .control-panel,
+  .selected-course-card,
+  .print-control-card,
+  .clean-print-area {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .home-hero-card h2,
+  .section-title-row h2,
+  .print-control-header h2,
+  .clean-print-title-block h2 {
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  .home-hero-card p,
+  .feature-card p,
+  .section-title-row p,
+  .print-control-header p,
+  .clean-print-title-block p {
+    font-size: 0.78rem;
+    line-height: 1.38;
+  }
+
+  .home-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+  }
+
+  .home-stat {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .home-stat span {
+    font-size: 0.68rem;
+  }
+
+  .home-stat strong {
+    font-size: 1rem;
+  }
+
+  .home-feature-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .feature-card {
+    padding: 13px;
+    border-radius: 16px;
+  }
+
+  .feature-card h3 {
+    font-size: 0.92rem;
+  }
+
+  .view-switch-card,
+  .print-mode-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .view-btn {
+    padding: 8px 6px;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .control-header,
+  .section-title-row,
+  .print-control-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    min-height: 38px;
+    font-size: 0.76rem;
+    padding: 9px 10px;
+  }
+
+  .selected-course-card h2,
+  #selectedTitle,
+  #tableTitle,
+  #cardsTitle {
+    font-size: 1rem;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .workload-box {
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px 12px;
+  }
+
+  .workload-box span,
+  .workload-box strong {
+    font-size: 0.76rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .timetable-table,
+  .clean-print-table {
+    min-width: 720px;
+  }
+
+  .timetable-table th,
+  .timetable-table td,
+  .clean-print-table th,
+  .clean-print-table td {
+    font-size: 0.7rem;
+    padding: 6px 5px;
+  }
+
+  .class-block,
+  .clean-print-class-block {
+    padding: 6px;
+    border-radius: 9px;
+  }
+
+  .subject-button,
+  .class-subject,
+  .clean-print-subject {
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .class-course,
+  .class-lecturer,
+  .clean-print-course,
+  .clean-print-lecturer {
+    font-size: 0.65rem;
+    line-height: 1.2;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .class-card {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .clean-print-period-box {
+    position: static !important;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  .clean-print-period-box span {
+    font-size: 0.65rem;
+  }
+
+  .clean-print-period-box strong {
+    font-size: 1.1rem;
+  }
+
+  .modal-card {
+    width: calc(100vw - 18px);
+    max-height: 88vh;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 1rem;
+  }
+
+  .admin-entry-card,
+  .admin-report-card {
+    padding: 13px;
+    border-radius: 16px;
+  }
+
+  .admin-button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    padding: 14px 8px;
+    font-size: 0.72rem;
+  }
+}
+
+    </style>
+</head>
+
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div class="hero-left">
+          <p class="eyebrow">Government Degree College, Cheepurupalli</p>
+          <h1>Time Table Dashboard</h1>
+          <p class="subtitle">
+            Coursewise and Lecturerwise live timetable view
+          </p>
+        </div>
+
+        <div class="sync-card">
+          <div class="live-dot"></div>
+          <div>
+            <p class="sync-label">Live Sheet Sync</p>
+            <p class="sync-time" id="updatedAt">Loading...</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="nav-card">
+        <button type="button" id="homeBtn" class="nav-btn active">
+          Home
+        </button>
+
+        <button type="button" id="navCourseBtn" class="nav-btn">
+          Coursewise
+        </button>
+
+        <button type="button" id="navLecturerBtn" class="nav-btn">
+          Lecturerwise
+        </button>
+
+        <button type="button" id="todayBtn" class="nav-btn today-btn">
+          Today's Timetable
+        </button>
+
+        <button type="button" id="printBtn" class="nav-btn print-btn">
+          Print / Download
+        </button>
+
+        <button type="button" id="adminGuideBtn" class="nav-btn admin-btn">
+          Admin Login
+        </button>
+      </section>
+
+
+      <section id="academicSelectorCard" class="academic-selector-card">
+        <div class="academic-selector-header">
+          <div>
+            <p class="selected-label">Academic Session</p>
+            <h2>Academic Year and Semester Selection</h2>
+            <p>
+              Select academic year and semester to load the correct coursewise, lecturerwise and print timetable.
+            </p>
+          </div>
+
+          <div class="source-chip">
+            <span>Source Sheet</span>
+            <strong id="sourceSheetName">Loading...</strong>
+          </div>
+        </div>
+
+        <div class="academic-filter-row">
+          <div>
+            <label for="academicYearFilter">Academic Year</label>
+            <select id="academicYearFilter">
+              <option value="">Loading...</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="semesterGroupFilter">Semester Group</label>
+            <select id="semesterGroupFilter">
+              <option value="">Loading...</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="semesterFilter">Semester</label>
+            <select id="semesterFilter">
+              <option value="all">All Semesters</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section id="homeSection" class="home-section">
+        <div class="home-hero-card">
+          <p class="selected-label">Dashboard Home</p>
+          <h2>Live Academic Time Table Portal</h2>
+          <p>
+            Select Coursewise or Lecturerwise view from the top navigation, check today's timetable, print the active view, and monitor holiday or lecturer leave notices from the Google Sheet backend.
+          </p>
+
+          <div id="homeHolidayNotice" class="notice-card neutral-notice">
+            Checking holiday status...
+          </div>
+
+          <div id="homeTeacherLeaveNotice" class="notice-card leave-summary-card">
+            Checking lecturers on leave...
+          </div>
+        </div>
+
+        <div class="home-stats-grid">
+          <div class="home-stat">
+            <span>Total Records</span>
+            <strong id="homeTotalClasses">0</strong>
+          </div>
+
+          <div class="home-stat">
+            <span>Courses</span>
+            <strong id="homeTotalCourses">0</strong>
+          </div>
+
+          <div class="home-stat">
+            <span>Lecturers</span>
+            <strong id="homeTotalLecturers">0</strong>
+          </div>
+
+          <div class="home-stat">
+            <span>Today</span>
+            <strong id="homeTodayName">--</strong>
+          </div>
+        </div>
+
+        <div class="home-feature-grid">
+          <div class="feature-card">
+            <h3>Coursewise View</h3>
+            <p>Shows all classes arranged by day and period. Useful for students and class representatives.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3>Lecturerwise View</h3>
+            <p>Shows individual lecturer workload, including combined practical classes split by lecturer names.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3>Syllabus Links</h3>
+            <p>Click any subject name to open the linked syllabus file from the backend sheet.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3>Notices</h3>
+            <p>Holiday notice and lecturer leave indication are displayed from the Google Sheet tabs.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="viewSwitchCard" class="view-switch-card hidden-box">
+        <button type="button" id="courseViewBtn" class="view-btn active">
+          Coursewise Time Table
+        </button>
+
+        <button type="button" id="lecturerViewBtn" class="view-btn">
+          Lecturerwise Time Table
+        </button>
+      </section>
+
+      <section id="controlPanel" class="control-panel hidden-box">
+        <div class="control-header">
+          <div>
+            <h2 id="filterHeading">Coursewise Filters</h2>
+            <p id="filterHelp">By default, the dashboard opens with all courses and all days.</p>
+          </div>
+
+          <button class="primary-btn" id="refreshBtn" type="button">
+            Refresh Now
+          </button>
+        </div>
+
+        <div class="filter-row">
+          <div id="courseFilterBox">
+            <label for="courseFilter">Select Course</label>
+            <select id="courseFilter">
+              <option value="all">All Courses</option>
+            </select>
+          </div>
+
+          <div id="lecturerFilterBox" class="hidden-box">
+            <label for="lecturerFilter">Select Lecturer</label>
+            <select id="lecturerFilter">
+              <option value="all">All Lecturers</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="dayFilter">Select Day</label>
+            <select id="dayFilter">
+              <option value="all">All Days</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section id="selectedCard" class="selected-course-card hidden-box">
+        <p class="selected-label">Current Selection</p>
+        <h2 id="selectedTitle">All Courses | All Days</h2>
+        <p class="click-hint">Click on any subject name to open the concerned syllabus.</p>
+
+      </section>
+
+      <section id="timetableSection" class="section-card hidden-box printable-area">
+        <div class="section-title-row">
+          <div>
+            <h2 id="tableTitle">Coursewise Time Table</h2>
+            <p id="tableHelp">
+              Days are shown vertically and class periods are shown horizontally.
+            </p>
+          </div>
+
+          <div id="workloadBox" class="workload-box hidden-box">
+            <span id="workloadLabel">Total Workload / Week</span>
+            <strong id="weeklyWorkload">0 Hours</strong>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div id="timetableContainer">
+            <div class="empty-state">Loading timetable...</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cardSection" class="section-card hidden-box card-section">
+        <div class="section-title-row">
+          <div>
+            <h2 id="cardsTitle">Mobile Card View</h2>
+            <p>
+              Same timetable in mobile friendly class cards with subject colour coding.
+            </p>
+          </div>
+        </div>
+
+        <div id="cardsContainer" class="card-grid">
+          <div class="empty-state">Loading class cards...</div>
+        </div>
+      </section>
+
+
+      <section id="printSection" class="print-page-section hidden-box">
+        <div class="print-control-card">
+          <div class="print-control-header">
+            <div>
+              <p class="selected-label">Print / Download</p>
+              <h2>Clean Time Table Print View</h2>
+              <p>
+                Select a course or lecturer, preview the weekly timetable, then print or save as PDF.
+              </p>
+            </div>
+
+            <button type="button" id="cleanPrintBtn" class="primary-btn">
+              Print / Save PDF
+            </button>
+          </div>
+
+          <div class="print-mode-row">
+            <button type="button" id="printCourseModeBtn" class="view-btn active">
+              Coursewise Print
+            </button>
+
+            <button type="button" id="printLecturerModeBtn" class="view-btn">
+              Lecturerwise Print
+            </button>
+          </div>
+
+          <div class="print-filter-row">
+            <div id="printCourseBox">
+              <label for="printCourseFilter">Select Course for Weekly Coursewise Time Table</label>
+              <select id="printCourseFilter">
+                <option value="">Select Course</option>
+              </select>
+            </div>
+
+            <div id="printLecturerBox" class="hidden-box">
+              <label for="printLecturerFilter">Select Lecturer for Weekly Lecturerwise Time Table</label>
+              <select id="printLecturerFilter">
+                <option value="">Select Lecturer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="cleanPrintArea" class="clean-print-area">
+          <div class="clean-print-title-block">
+            <div class="clean-print-period-box">
+              <span>Total Periods / Week</span>
+              <strong id="cleanPrintTotalPeriods">0</strong>
+            </div>
+
+            <h2 id="cleanPrintTitle">Coursewise Time Table</h2>
+            <p id="cleanPrintSubTitle">Course: Select Course</p>
+          </div>
+
+          <div id="cleanPrintTableContainer">
+            <div class="empty-state">Select course or lecturer to generate print preview.</div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Generated from live Google Sheet data using Google Apps Script.
+        </p>
+      </footer>
+    </div>
+
+        <div id="adminModal" class="modal-overlay hidden-box">
+      <div class="modal-card admin-login-modal-card">
+        <div class="modal-header">
+          <div>
+            <p class="selected-label">Admin Login</p>
+            <h2>Holiday and Lecturer Leave Entry</h2>
+          </div>
+
+          <button type="button" id="adminCloseBtn" class="modal-close">
+            ×
+          </button>
+        </div>
+
+        <div id="adminLoginPanel" class="admin-login-panel">
+          <p class="admin-note">
+            Login is required to add holidays and lecturer leave entries directly into the Google Sheet.
+          </p>
+
+          <div class="admin-form-grid">
+            <div>
+              <label for="adminUserId">User ID</label>
+              <input id="adminUserId" class="admin-input" type="text" placeholder="Enter User ID">
+            </div>
+
+            <div>
+              <label for="adminPassword">Password</label>
+              <input id="adminPassword" class="admin-input" type="password" placeholder="Enter Password">
+            </div>
+          </div>
+
+          <button type="button" id="adminLoginBtn" class="primary-btn admin-action-btn">
+            Login
+          </button>
+
+          <div id="adminLoginMessage" class="admin-message"></div>
+        </div>
+
+        <div id="adminEntryPanel" class="admin-entry-panel hidden-box">
+          <div class="admin-panel-top">
+            <div>
+              <p class="selected-label">Admin Panel</p>
+              <h3>Update Dashboard Records</h3>
+            </div>
+
+            <button type="button" id="adminLogoutBtn" class="secondary-btn">
+              Logout
+            </button>
+          </div>
+
+          <div class="admin-entry-grid">
+            <div class="admin-entry-card">
+              <h3>Add / Update Holiday</h3>
+              <p>Add a holiday date and name. It will update the Holidays sheet directly.</p>
+
+              <label for="holidayDateInput">Holiday Date</label>
+              <input id="holidayDateInput" class="admin-input" type="date">
+
+              <label for="holidayNameInput">Holiday Name</label>
+              <input id="holidayNameInput" class="admin-input" type="text" placeholder="Example: Sankranti Holiday">
+
+              <button type="button" id="saveHolidayBtn" class="primary-btn admin-action-btn">
+                Save Holiday
+              </button>
+
+              <div id="holidaySaveMessage" class="admin-message"></div>
+            </div>
+
+            <div class="admin-entry-card">
+              <h3>Lecturer Leave Entry</h3>
+              <p>Mark or clear lecturer leave for a selected date. It will update the TeacherLeaves sheet directly.</p>
+
+              <label for="leaveLecturerInput">Lecturer Name</label>
+              <select id="leaveLecturerInput" class="admin-input">
+                <option value="">Select Lecturer</option>
+              </select>
+
+              <label for="leaveDateInput">Leave Date</label>
+              <input id="leaveDateInput" class="admin-input" type="date">
+
+              <div class="admin-button-row">
+                <button type="button" id="saveLeaveBtn" class="primary-btn admin-action-btn">
+                  Mark Leave
+                </button>
+
+                <button type="button" id="clearLeaveBtn" class="secondary-btn admin-action-btn">
+                  Clear Leave
+                </button>
+              </div>
+
+              <div id="leaveSaveMessage" class="admin-message"></div>
+            </div>
+          </div>
+
+          <div class="admin-report-section">
+            <div class="admin-report-header">
+              <div>
+                <h3>Saved Reports</h3>
+                <p>Recently added holidays and lecturer leave entries from the Google Sheet are shown below.</p>
+              </div>
+
+              <button type="button" id="adminReportRefreshBtn" class="secondary-btn">
+                Refresh Reports
+              </button>
+            </div>
+
+            <div class="admin-report-grid">
+              <div class="admin-report-card">
+                <h3>Holiday Report</h3>
+                <div id="holidayReportContainer" class="admin-report-table-wrap">
+                  <div class="admin-empty-report">No holidays loaded yet.</div>
+                </div>
+              </div>
+
+              <div class="admin-report-card">
+                <h3>Lecturer Leave Report</h3>
+                <div id="lecturerLeaveReportContainer" class="admin-report-table-wrap">
+                  <div class="admin-empty-report">No lecturer leave entries loaded yet.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div id="syllabusModal" class="modal-overlay hidden-box">
+      <div class="modal-card syllabus-modal-card">
+        <div class="modal-header">
+          <div>
+            <p class="selected-label">Syllabus Preview</p>
+            <h2 id="syllabusModalTitle">Subject Syllabus</h2>
+          </div>
+
+          <button type="button" id="syllabusCloseBtn" class="modal-close">
+            ×
+          </button>
+        </div>
+
+        <div class="syllabus-frame-wrap">
+          <iframe id="syllabusFrame" title="Syllabus Preview" loading="lazy"></iframe>
+        </div>
+
+        <div class="syllabus-modal-actions">
+          <button type="button" id="syllabusOpenNewBtn" class="primary-btn">
+            Open in New Tab
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast">Refreshing timetable...</div>
+
+    <script>
+      /*
+       * IMPORTANT:
+       * Paste your deployed Google Apps Script Web App URL below.
+       * Example:
+       * https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxx/exec
+       */
+      window.TIMETABLE_CONFIG = {
+        APPS_SCRIPT_API_URL: "https://script.google.com/macros/s/AKfycbwVGzwdnwvN7kFt_d4caYkAhVQejIwj0cZ-kdS2kYK2SgtMSFBQHvtXDXl6mPj8jsCS/exec"
+      };
+    </script>
+    <script>
+
+/****************************************************
+ * GITHUB BACKEND BRIDGE
+ * --------------------------------------------------
+ * This file can run in two modes:
+ * 1. Google Apps Script HTML mode: uses google.script.run
+ * 2. GitHub Pages mode: uses Apps Script Web App JSONP API
+ *
+ * For GitHub Pages, set APPS_SCRIPT_API_URL in index.html.
+ ****************************************************/
+
+function getAppsScriptApiUrl_() {
+  const configUrl =
+    window.TIMETABLE_CONFIG &&
+    window.TIMETABLE_CONFIG.APPS_SCRIPT_API_URL;
+
+  return String(configUrl || "").trim();
+}
+
+function isInsideAppsScript_() {
+  return typeof google !== "undefined" &&
+         google.script &&
+         google.script.run;
+}
+
+function callBackend(functionName, payload) {
+  if (isInsideAppsScript_()) {
+    return new Promise(function (resolve, reject) {
+      const runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject);
+
+      if (typeof payload === "undefined") {
+        runner[functionName]();
+      } else {
+        runner[functionName](payload);
+      }
+    });
+  }
+
+  const apiUrl = getAppsScriptApiUrl_();
+
+  if (!apiUrl || apiUrl.indexOf("PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") !== -1) {
+    return Promise.reject(
+      new Error("https://script.google.com/macros/s/AKfycbwVGzwdnwvN7kFt_d4caYkAhVQejIwj0cZ-kdS2kYK2SgtMSFBQHvtXDXl6mPj8jsCS/exec")
+    );
+  }
+
+  return jsonpBackendRequest_(apiUrl, {
+    action: functionName,
+    payload: JSON.stringify(payload || {})
+  });
+}
+
+function jsonpBackendRequest_(apiUrl, params) {
+  return new Promise(function (resolve, reject) {
+    const callbackName =
+      "__ttDashboardCallback_" +
+      Date.now() +
+      "_" +
+      Math.floor(Math.random() * 1000000);
+
+    const query = new URLSearchParams(params || {});
+    query.set("callback", callbackName);
+
+    const separator = apiUrl.indexOf("?") === -1 ? "?" : "&";
+    const script = document.createElement("script");
+
+    let completed = false;
+
+    const timer = setTimeout(function () {
+      cleanup();
+      reject(new Error("Apps Script API request timed out."));
+    }, 30000);
+
+    function cleanup() {
+      if (completed) return;
+      completed = true;
+      clearTimeout(timer);
+
+      try {
+        delete window[callbackName];
+      } catch (err) {
+        window[callbackName] = undefined;
+      }
+
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    }
+
+    window[callbackName] = function (response) {
+      cleanup();
+
+      if (response && response.success === false && response.error) {
+        reject(new Error(response.error));
+        return;
+      }
+
+      resolve(response);
+    };
+
+    script.onerror = function () {
+      cleanup();
+      reject(new Error("Unable to load Apps Script API. Check deployment URL and access permissions."));
+    };
+
+    script.src = apiUrl + separator + query.toString();
+    document.head.appendChild(script);
+  });
+}
+
+
+const COURSE_LIST = [
+    "B.A Honours (Political Science) Sem II",
+    "B.Com Honours (Computer Applications) Sem II",
+    "B.Sc Honours (Mathematics) Sem II",
+    "B.Sc Honours (Physics) Sem II",
+    "B.Sc Honours (Chemistry) Sem II",
+    "B.Sc Honours (Computer Science) Sem II",
+    "B.Sc Honours (Zoology) Sem II",
+    "B.A Honours (Economics) Sem IV",
+    "B.Com Honours (Computer Applications) Sem IV",
+    "B.Sc Honours (Mathematics) Sem IV",
+    "B.Sc Honours (Physics) Sem IV",
+    "B.Sc Honours (Chemistry) Sem IV",
+    "B.Sc Honours (Computer Science) Sem IV",
+    "B.Sc Honours (Zoology) Sem IV",
+    "B.A Honours (Economics) Sem VI",
+    "B.Com Honours (Computer Applications) Sem VI",
+    "B.Sc Honours (Mathematics) Sem VI",
+    "B.Sc Honours (Physics) Sem VI",
+    "B.Sc Honours (Chemistry) Sem VI",
+    "B.Sc Honours (Computer Science) Sem VI",
+    "B.Sc Honours (Zoology) Sem VI"
+  ];
+
+  const DAY_LIST = [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY"
+  ];
+
+  const PERIODS = [
+    { label: "10.00AM - 11.00AM", startMinutes: 600, endMinutes: 660 },
+    { label: "11.00AM - 12.00PM", startMinutes: 660, endMinutes: 720 },
+    { label: "12.00PM - 1.00PM", startMinutes: 720, endMinutes: 780 },
+    { label: "2.00PM - 3.00PM", startMinutes: 840, endMinutes: 900 },
+    { label: "3.00PM - 4.00PM", startMinutes: 900, endMinutes: 960 },
+    { label: "4.00PM - 5.00PM", startMinutes: 960, endMinutes: 1020 }
+  ];
+
+  const SUBJECT_COLORS = [
+    { color: "#b91c1c", bg: "#fef2f2" },
+    { color: "#1d4ed8", bg: "#eff6ff" },
+    { color: "#047857", bg: "#ecfdf5" },
+    { color: "#7c3aed", bg: "#f5f3ff" },
+    { color: "#c2410c", bg: "#fff7ed" },
+    { color: "#be185d", bg: "#fdf2f8" },
+    { color: "#0f766e", bg: "#f0fdfa" },
+    { color: "#4338ca", bg: "#eef2ff" },
+    { color: "#a16207", bg: "#fefce8" },
+    { color: "#334155", bg: "#f8fafc" }
+  ];
+
+  let adminState = {
+    isLoggedIn: false,
+    userId: "",
+    password: ""
+  };
+
+  let state = {
+    workbook: null,
+    rows: [],
+    courseMaster: [],
+    activeCourses: [],
+    selectedAcademicYear: "2026-27",
+    selectedSemesterGroup: "Odd",
+    selectedSemester: "all",
+    selectedSourceSheet: "Sendemails_2026_27_Odd",
+    activePage: "home",
+    activeView: "course",
+    selectedCourse: "all",
+    selectedLecturer: "all",
+    selectedDay: "all",
+    printView: "course",
+    printCourse: "",
+    printLecturer: "",
+    syllabusLinks: {}
+  };
+
+  window.addEventListener("load", function () {
+    populateCourseDropdown();
+    populateDayDropdown();
+
+    document.getElementById("academicYearFilter").addEventListener("change", handleAcademicYearChange);
+    document.getElementById("semesterGroupFilter").addEventListener("change", handleSemesterGroupChange);
+    document.getElementById("semesterFilter").addEventListener("change", handleSemesterChange);
+
+    document.getElementById("homeBtn").addEventListener("click", showHome);
+    document.getElementById("navCourseBtn").addEventListener("click", function () {
+      openDashboardView("course");
+    });
+    document.getElementById("navLecturerBtn").addEventListener("click", function () {
+      openDashboardView("lecturer");
+    });
+    document.getElementById("todayBtn").addEventListener("click", showTodayTimetable);
+    document.getElementById("printBtn").addEventListener("click", openPrintPage);
+    document.getElementById("printCourseModeBtn").addEventListener("click", function () {
+      setPrintView("course");
+    });
+    document.getElementById("printLecturerModeBtn").addEventListener("click", function () {
+      setPrintView("lecturer");
+    });
+    document.getElementById("printCourseFilter").addEventListener("change", function () {
+      state.printCourse = document.getElementById("printCourseFilter").value || "";
+      renderCleanPrintTable();
+    });
+    document.getElementById("printLecturerFilter").addEventListener("change", function () {
+      state.printLecturer = document.getElementById("printLecturerFilter").value || "";
+      renderCleanPrintTable();
+    });
+    document.getElementById("cleanPrintBtn").addEventListener("click", printCleanTimeTable);
+    document.getElementById("adminGuideBtn").addEventListener("click", openAdminGuide);
+    document.getElementById("adminCloseBtn").addEventListener("click", closeAdminGuide);
+    document.getElementById("adminLoginBtn").addEventListener("click", handleAdminLogin);
+    document.getElementById("adminLogoutBtn").addEventListener("click", handleAdminLogout);
+    document.getElementById("saveHolidayBtn").addEventListener("click", saveHolidayEntry);
+    document.getElementById("saveLeaveBtn").addEventListener("click", markLecturerLeaveEntry);
+    document.getElementById("clearLeaveBtn").addEventListener("click", clearLecturerLeaveEntry);
+    document.getElementById("adminReportRefreshBtn").addEventListener("click", function () {
+      loadData(true);
+      showMessage("Reports refreshed.");
+    });
+    document.getElementById("syllabusCloseBtn").addEventListener("click", closeSyllabusModal);
+    document.getElementById("syllabusModal").addEventListener("click", function (event) {
+      if (event.target.id === "syllabusModal") {
+        closeSyllabusModal();
+      }
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", manualRefresh);
+    document.getElementById("courseFilter").addEventListener("change", handleCourseChange);
+    document.getElementById("lecturerFilter").addEventListener("change", handleLecturerChange);
+    document.getElementById("dayFilter").addEventListener("change", handleDayChange);
+
+    document.getElementById("courseViewBtn").addEventListener("click", function () {
+      setActiveView("course");
+    });
+
+    document.getElementById("lecturerViewBtn").addEventListener("click", function () {
+      setActiveView("lecturer");
+    });
+
+    document.addEventListener("click", function (event) {
+      const subjectButton = event.target.closest("[data-syllabus-key]");
+
+      if (!subjectButton) return;
+
+      const key = subjectButton.getAttribute("data-syllabus-key");
+      const subject = subjectButton.getAttribute("data-subject-name") || "this subject";
+      const url = state.syllabusLinks[key];
+
+      if (!url) {
+        showMessage("Syllabus link is not available for " + subject + ".");
+        return;
+      }
+
+      openSyllabusModal(subject, url);
+    });
+
+    loadData(true);
+
+    setInterval(function () {
+      loadData(false);
+    }, 60000);
+  });
+
+  function showHome() {
+    state.activePage = "home";
+    renderDashboard();
+  }
+
+  function openDashboardView(view) {
+    state.activePage = "dashboard";
+    setActiveView(view);
+  }
+
+  function setActiveView(view) {
+    state.activeView = view;
+    state.selectedDay = "all";
+
+    if (view === "course") {
+      state.selectedLecturer = "all";
+    } else {
+      state.selectedCourse = "all";
+    }
+
+    document.getElementById("courseFilter").value = state.selectedCourse;
+    document.getElementById("lecturerFilter").value = state.selectedLecturer;
+    document.getElementById("dayFilter").value = state.selectedDay;
+
+    renderDashboard();
+    animateTimetableSections();
+  }
+
+  function showTodayTimetable() {
+    const todayName = getTodayName();
+
+    if (!DAY_LIST.includes(todayName)) {
+      showMessage("Today is not a regular timetable day.");
+      return;
+    }
+
+    state.activePage = "dashboard";
+    state.selectedDay = todayName;
+
+    document.getElementById("dayFilter").value = todayName;
+
+    renderDashboard();
+    animateTimetableSections();
+    showMessage("Showing today's timetable: " + todayName + ".");
+  }
+
+  function openPrintPage() {
+    state.activePage = "print";
+    state.printView = state.activeView === "lecturer" ? "lecturer" : "course";
+
+    populatePrintDropdowns();
+
+    if (state.printView === "course") {
+      state.printCourse = state.selectedCourse !== "all"
+        ? state.selectedCourse
+        : (state.printCourse || getActiveCourseList()[0] || "");
+    } else {
+      const lecturers = getUniqueLecturerNames();
+      state.printLecturer = state.selectedLecturer !== "all"
+        ? state.selectedLecturer
+        : (state.printLecturer || lecturers[0] || "");
+    }
+
+    syncPrintControls();
+    renderDashboard();
+    renderCleanPrintTable();
+    showMessage("Print view opened.");
+  }
+
+  function setPrintView(view) {
+    state.printView = view;
+
+    if (view === "course") {
+      if (!state.printCourse) {
+        state.printCourse = state.selectedCourse !== "all"
+          ? state.selectedCourse
+          : getActiveCourseList()[0] || "";
+      }
+    } else {
+      const lecturers = getUniqueLecturerNames();
+      if (!state.printLecturer) {
+        state.printLecturer = state.selectedLecturer !== "all"
+          ? state.selectedLecturer
+          : lecturers[0] || "";
+      }
+    }
+
+    syncPrintControls();
+    renderCleanPrintTable();
+  }
+
+  function printCleanTimeTable() {
+    if (state.activePage !== "print") {
+      openPrintPage();
+    }
+
+    renderCleanPrintTable();
+
+    setTimeout(function () {
+      window.print();
+    }, 150);
+  }
+
+  function openAdminGuide() {
+    const modal = document.getElementById("adminModal");
+
+    if (!modal) return;
+
+    populateAdminLecturerDropdown();
+    updateAdminPanels();
+    modal.classList.remove("hidden-box");
+  }
+
+  function closeAdminGuide() {
+    document.getElementById("adminModal").classList.add("hidden-box");
+  }
+
+  function updateAdminPanels() {
+    const loginPanel = document.getElementById("adminLoginPanel");
+    const entryPanel = document.getElementById("adminEntryPanel");
+
+    if (!loginPanel || !entryPanel) return;
+
+    loginPanel.classList.toggle("hidden-box", adminState.isLoggedIn);
+    entryPanel.classList.toggle("hidden-box", !adminState.isLoggedIn);
+  }
+
+  function handleAdminLogin() {
+    const userId = cleanCell(document.getElementById("adminUserId").value);
+    const password = cleanCell(document.getElementById("adminPassword").value);
+    const message = document.getElementById("adminLoginMessage");
+
+    setAdminMessage(message, "Checking login...", "");
+
+    callBackend("authenticateAdmin", {
+      userId: userId,
+      password: password
+    })
+      .then(function (result) {
+        if (result && result.success) {
+          adminState.isLoggedIn = true;
+          adminState.userId = userId;
+          adminState.password = password;
+
+          document.getElementById("adminPassword").value = "";
+          populateAdminLecturerDropdown();
+          updateAdminPanels();
+          setAdminMessage(message, "", "");
+          showMessage("Admin login successful.");
+        } else {
+          adminState.isLoggedIn = false;
+          setAdminMessage(message, "Invalid User ID or Password.", "error");
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+        setAdminMessage(message, "Login failed. Please check Apps Script API URL and backend deployment.", "error");
+      });
+  }
+
+  function handleAdminLogout() {
+    adminState.isLoggedIn = false;
+    adminState.userId = "";
+    adminState.password = "";
+
+    updateAdminPanels();
+    showMessage("Admin logged out.");
+  }
+
+  function populateAdminLecturerDropdown() {
+    const select = document.getElementById("leaveLecturerInput");
+
+    if (!select) return;
+
+    const currentValue = select.value;
+
+    select.innerHTML = '<option value="">Select Lecturer</option>';
+
+    getUniqueLecturerNames().forEach(function (lecturer) {
+      const option = document.createElement("option");
+      option.value = lecturer;
+      option.textContent = lecturer;
+      select.appendChild(option);
+    });
+
+    if (currentValue) {
+      select.value = currentValue;
+    }
+  }
+
+  function saveHolidayEntry() {
+    const dateValue = cleanCell(document.getElementById("holidayDateInput").value);
+    const holidayName = cleanCell(document.getElementById("holidayNameInput").value);
+    const message = document.getElementById("holidaySaveMessage");
+
+    if (!adminState.isLoggedIn) {
+      setAdminMessage(message, "Please login first.", "error");
+      return;
+    }
+
+    if (!dateValue || !holidayName) {
+      setAdminMessage(message, "Please enter holiday date and holiday name.", "error");
+      return;
+    }
+
+    setAdminMessage(message, "Saving holiday...", "");
+
+    callBackend("saveHolidayFromDashboard", {
+      userId: adminState.userId,
+      password: adminState.password,
+      date: dateValue,
+      name: holidayName
+    })
+      .then(function (result) {
+        if (result && result.success) {
+          setAdminMessage(message, result.message || "Holiday saved successfully.", "success");
+          document.getElementById("holidayDateInput").value = "";
+          document.getElementById("holidayNameInput").value = "";
+          loadData(false);
+        } else {
+          setAdminMessage(message, (result && result.message) || "Unable to save holiday.", "error");
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+        setAdminMessage(message, "Holiday save failed. Check Apps Script API backend.", "error");
+      });
+  }
+
+  function markLecturerLeaveEntry() {
+    saveLecturerLeaveStatus_("leave");
+  }
+
+  function clearLecturerLeaveEntry() {
+    saveLecturerLeaveStatus_("clear");
+  }
+
+  function saveLecturerLeaveStatus_(action) {
+    const lecturerName = cleanCell(document.getElementById("leaveLecturerInput").value);
+    const dateValue = cleanCell(document.getElementById("leaveDateInput").value);
+    const message = document.getElementById("leaveSaveMessage");
+
+    if (!adminState.isLoggedIn) {
+      setAdminMessage(message, "Please login first.", "error");
+      return;
+    }
+
+    if (!lecturerName || !dateValue) {
+      setAdminMessage(message, "Please select lecturer and leave date.", "error");
+      return;
+    }
+
+    setAdminMessage(message, action === "leave" ? "Marking leave..." : "Clearing leave...", "");
+
+    const payload = {
+      userId: adminState.userId,
+      password: adminState.password,
+      lecturer: lecturerName,
+      date: dateValue
+    };
+
+    const backendFunction =
+      action === "leave"
+        ? "saveLecturerLeaveFromDashboard"
+        : "clearLecturerLeaveFromDashboard";
+
+    callBackend(backendFunction, payload)
+      .then(function (result) {
+        if (result && result.success) {
+          setAdminMessage(message, result.message || "Lecturer leave updated successfully.", "success");
+          document.getElementById("leaveLecturerInput").value = "";
+          document.getElementById("leaveDateInput").value = "";
+          loadData(false);
+        } else {
+          setAdminMessage(message, (result && result.message) || "Unable to update lecturer leave.", "error");
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+        setAdminMessage(message, "Lecturer leave update failed. Check Apps Script API backend.", "error");
+      });
+  }
+
+  function setAdminMessage(element, text, type) {
+    if (!element) return;
+
+    element.textContent = text || "";
+    element.classList.remove("success", "error");
+
+    if (type) {
+      element.classList.add(type);
+    }
+  }
+
+  function renderAdminReports() {
+    renderHolidayReport();
+    renderLecturerLeaveReport();
+  }
+
+  function renderHolidayReport() {
+    const container = document.getElementById("holidayReportContainer");
+
+    if (!container) return;
+
+    const sheet = getSheet("Holidays");
+
+    if (!sheet || !sheet.values || sheet.values.length === 0) {
+      container.innerHTML = '<div class="admin-empty-report">No holidays found.</div>';
+      return;
+    }
+
+    const rows = [];
+
+    sheet.values.forEach(function (row, index) {
+      const dateParts = parseDateParts(row[0]);
+      const holidayName = cleanCell(row[1]);
+
+      if (!dateParts || !holidayName) return;
+
+      const maybeHeader = index === 0 && cleanCell(row[0]).toLowerCase().includes("date");
+      if (maybeHeader) return;
+
+      rows.push({
+        sortKey: dateParts.year + "-" + pad2(dateParts.month) + "-" + pad2(dateParts.day),
+        date: formatDateParts(dateParts),
+        name: holidayName
+      });
+    });
+
+    rows.sort(function (a, b) {
+      return a.sortKey.localeCompare(b.sortKey);
+    });
+
+    if (rows.length === 0) {
+      container.innerHTML = '<div class="admin-empty-report">No holiday entries available.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="admin-report-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Holiday Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(function (row) {
+            return `
+              <tr>
+                <td>${escapeHtml(row.date)}</td>
+                <td>${escapeHtml(row.name)}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderLecturerLeaveReport() {
+    const container = document.getElementById("lecturerLeaveReportContainer");
+
+    if (!container) return;
+
+    const sheet = getSheet("TeacherLeaves");
+
+    if (!sheet || !sheet.values || sheet.values.length < 2) {
+      container.innerHTML = '<div class="admin-empty-report">No lecturer leave entries found.</div>';
+      return;
+    }
+
+    const header = sheet.values[0] || [];
+    const rows = [];
+
+    for (let c = 1; c < header.length; c++) {
+      const dateParts = parseDateParts(header[c]);
+
+      if (!dateParts) continue;
+
+      for (let r = 1; r < sheet.values.length; r++) {
+        const lecturerName = cleanCell(sheet.values[r][0]);
+        const leaveValue = cleanCell(sheet.values[r][c]);
+
+        if (!lecturerName || !isTruthyLeaveValue(leaveValue)) continue;
+
+        rows.push({
+          sortKey: dateParts.year + "-" + pad2(dateParts.month) + "-" + pad2(dateParts.day) + "-" + lecturerName.toLowerCase(),
+          date: formatDateParts(dateParts),
+          lecturer: lecturerName,
+          status: leaveValue
+        });
+      }
+    }
+
+    rows.sort(function (a, b) {
+      return a.sortKey.localeCompare(b.sortKey);
+    });
+
+    if (rows.length === 0) {
+      container.innerHTML = '<div class="admin-empty-report">No lecturer leave entries available.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="admin-report-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Lecturer</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(function (row) {
+            return `
+              <tr>
+                <td>${escapeHtml(row.date)}</td>
+                <td>${escapeHtml(row.lecturer)}</td>
+                <td>${escapeHtml(row.status)}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function formatDateParts(parts) {
+    if (!parts) return "";
+
+    return pad2(parts.day) + "-" + pad2(parts.month) + "-" + parts.year;
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function openSyllabusModal(subject, url) {
+    const modal = document.getElementById("syllabusModal");
+    const title = document.getElementById("syllabusModalTitle");
+    const frame = document.getElementById("syllabusFrame");
+    const openNewBtn = document.getElementById("syllabusOpenNewBtn");
+
+    if (!modal || !title || !frame || !openNewBtn) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    title.textContent = subject || "Subject Syllabus";
+    frame.src = makeSyllabusPreviewUrl(url);
+
+    openNewBtn.onclick = function () {
+      window.open(url, "_blank");
+    };
+
+    modal.classList.remove("hidden-box");
+  }
+
+  function closeSyllabusModal() {
+    const modal = document.getElementById("syllabusModal");
+    const frame = document.getElementById("syllabusFrame");
+
+    if (frame) {
+      frame.src = "";
+    }
+
+    if (modal) {
+      modal.classList.add("hidden-box");
+    }
+  }
+
+  function makeSyllabusPreviewUrl(url) {
+    const cleanUrl = cleanCell(url);
+
+    if (!cleanUrl) return "";
+
+    const driveFileMatch = cleanUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+
+    if (driveFileMatch && driveFileMatch[1]) {
+      return "https://drive.google.com/file/d/" + driveFileMatch[1] + "/preview";
+    }
+
+    const driveOpenMatch = cleanUrl.match(/[?&]id=([-\w]{25,})/);
+
+    if (cleanUrl.includes("drive.google.com") && driveOpenMatch && driveOpenMatch[1]) {
+      return "https://drive.google.com/file/d/" + driveOpenMatch[1] + "/preview";
+    }
+
+    if (cleanUrl.includes("docs.google.com")) {
+      return cleanUrl
+        .replace(/\/edit.*$/, "/preview")
+        .replace(/\/view.*$/, "/preview");
+    }
+
+    return cleanUrl;
+  }
+
+
+  function animateTimetableSections() {
+    if (state.activePage !== "dashboard") return;
+
+    const sections = [
+      document.getElementById("timetableSection"),
+      document.getElementById("cardSection")
+    ];
+
+    sections.forEach(function (section) {
+      if (!section || section.classList.contains("hidden-box")) return;
+
+      section.classList.remove("slide-up-animate");
+      void section.offsetWidth;
+      section.classList.add("slide-up-animate");
+    });
+  }
+
+
+
+  function buildCourseMasterRows() {
+    const sheet = getSheet("Course_Master");
+
+    if (!sheet || !sheet.values || sheet.values.length < 2) {
+      return [];
+    }
+
+    return sheet.values.slice(1)
+      .map(function (row) {
+        return {
+          academicYear: cleanCell(row[0]),
+          semesterGroup: cleanCell(row[1]),
+          semester: cleanCell(row[2]),
+          courseName: cleanCell(row[3]),
+          sourceSheet: cleanCell(row[4]),
+          status: cleanCell(row[5]),
+          sortOrder: Number(row[6]) || 999
+        };
+      })
+      .filter(function (row) {
+        return row.academicYear &&
+               row.semesterGroup &&
+               row.semester &&
+               row.courseName &&
+               row.sourceSheet &&
+               row.status.toLowerCase() !== "inactive";
+      })
+      .sort(function (a, b) {
+        return a.sortOrder - b.sortOrder || a.courseName.localeCompare(b.courseName);
+      });
+  }
+
+  function updateAcademicDropdowns() {
+    const yearSelect = document.getElementById("academicYearFilter");
+    const groupSelect = document.getElementById("semesterGroupFilter");
+    const semesterSelect = document.getElementById("semesterFilter");
+
+    if (!yearSelect || !groupSelect || !semesterSelect) return;
+
+    const years = getUniqueValues(state.courseMaster.map(function (row) {
+      return row.academicYear;
+    }));
+
+    if (years.length === 0) {
+      yearSelect.innerHTML = '<option value="2026-27">2026-27</option>';
+      groupSelect.innerHTML = '<option value="Odd">Odd</option>';
+      semesterSelect.innerHTML = '<option value="all">All Semesters</option>';
+      state.selectedAcademicYear = "2026-27";
+      state.selectedSemesterGroup = "Odd";
+      state.selectedSemester = "all";
+      return;
+    }
+
+    yearSelect.innerHTML = "";
+
+    years.forEach(function (year) {
+      const option = document.createElement("option");
+      option.value = year;
+      option.textContent = year;
+      yearSelect.appendChild(option);
+    });
+
+    if (!years.includes(state.selectedAcademicYear)) {
+      state.selectedAcademicYear = years.includes("2026-27") ? "2026-27" : years[years.length - 1];
+    }
+
+    yearSelect.value = state.selectedAcademicYear;
+
+    const groups = getUniqueValues(
+      state.courseMaster
+        .filter(function (row) {
+          return row.academicYear === state.selectedAcademicYear;
+        })
+        .map(function (row) {
+          return row.semesterGroup;
+        })
+    );
+
+    groupSelect.innerHTML = "";
+
+    groups.forEach(function (group) {
+      const option = document.createElement("option");
+      option.value = group;
+      option.textContent = group;
+      groupSelect.appendChild(option);
+    });
+
+    if (!groups.includes(state.selectedSemesterGroup)) {
+      state.selectedSemesterGroup = groups.includes("Odd") ? "Odd" : groups[0] || "";
+    }
+
+    groupSelect.value = state.selectedSemesterGroup;
+
+    const semesters = getUniqueValues(
+      state.courseMaster
+        .filter(function (row) {
+          return row.academicYear === state.selectedAcademicYear &&
+                 row.semesterGroup === state.selectedSemesterGroup;
+        })
+        .map(function (row) {
+          return row.semester;
+        })
+    );
+
+    semesterSelect.innerHTML = '<option value="all">All Semesters</option>';
+
+    semesters.forEach(function (semester) {
+      const option = document.createElement("option");
+      option.value = semester;
+      option.textContent = semester;
+      semesterSelect.appendChild(option);
+    });
+
+    if (state.selectedSemester !== "all" && !semesters.includes(state.selectedSemester)) {
+      state.selectedSemester = "all";
+    }
+
+    semesterSelect.value = state.selectedSemester;
+  }
+
+  function refreshAcademicContext() {
+    const matchingRows = getMatchingCourseMasterRows();
+
+    state.activeCourses = matchingRows.map(function (row) {
+      return row.courseName;
+    });
+
+    if (matchingRows.length > 0) {
+      state.selectedSourceSheet = matchingRows[0].sourceSheet;
+    } else if (!state.selectedSourceSheet) {
+      state.selectedSourceSheet = "Sendemails";
+    }
+
+    if (state.selectedCourse !== "all" && !state.activeCourses.includes(state.selectedCourse)) {
+      state.selectedCourse = "all";
+    }
+
+    if (state.printCourse && !state.activeCourses.includes(state.printCourse)) {
+      state.printCourse = "";
+    }
+
+    const sourceLabel = document.getElementById("sourceSheetName");
+    if (sourceLabel) {
+      sourceLabel.textContent = state.selectedSourceSheet || "Sendemails";
+    }
+  }
+
+  function getMatchingCourseMasterRows() {
+    let rows = state.courseMaster.filter(function (row) {
+      const yearOk = row.academicYear === state.selectedAcademicYear;
+      const groupOk = row.semesterGroup === state.selectedSemesterGroup;
+      const semesterOk = state.selectedSemester === "all" || row.semester === state.selectedSemester;
+
+      return yearOk && groupOk && semesterOk;
+    });
+
+    if (rows.length === 0 && state.courseMaster.length > 0) {
+      rows = state.courseMaster.filter(function (row) {
+        return row.academicYear === state.selectedAcademicYear &&
+               row.semesterGroup === state.selectedSemesterGroup;
+      });
+    }
+
+    return rows;
+  }
+
+  function getActiveCourseList() {
+    if (state.activeCourses && state.activeCourses.length > 0) {
+      return state.activeCourses;
+    }
+
+    return COURSE_LIST || [];
+  }
+
+  function getContextRows() {
+    const courses = getActiveCourseList();
+
+    if (!courses || courses.length === 0 || state.courseMaster.length === 0) {
+      return state.rows;
+    }
+
+    return state.rows.filter(function (row) {
+      const courseOk = courses.some(function (course) {
+        return coursesMatch(row.course, course);
+      });
+
+      if (!courseOk) return false;
+
+      if (state.selectedSemester !== "all") {
+        return normalizeSemester(row.semester) === normalizeSemester(state.selectedSemester) ||
+               normalizeCourse(row.course).endsWith(normalizeSemester(state.selectedSemester));
+      }
+
+      return true;
+    });
+  }
+
+  function normalizeSemester(value) {
+    return cleanCell(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getCurrentSourceSheetName() {
+    return state.selectedSourceSheet || "Sendemails";
+  }
+
+  function handleAcademicYearChange() {
+    state.selectedAcademicYear = document.getElementById("academicYearFilter").value || state.selectedAcademicYear;
+    state.selectedSemester = "all";
+
+    updateAcademicDropdowns();
+    refreshAcademicContext();
+    state.rows = buildRowsFromSendemails(state.workbook);
+    resetAfterAcademicChange_();
+  }
+
+  function handleSemesterGroupChange() {
+    state.selectedSemesterGroup = document.getElementById("semesterGroupFilter").value || state.selectedSemesterGroup;
+    state.selectedSemester = "all";
+
+    updateAcademicDropdowns();
+    refreshAcademicContext();
+    state.rows = buildRowsFromSendemails(state.workbook);
+    resetAfterAcademicChange_();
+  }
+
+  function handleSemesterChange() {
+    state.selectedSemester = document.getElementById("semesterFilter").value || "all";
+
+    updateAcademicDropdowns();
+    refreshAcademicContext();
+    state.rows = buildRowsFromSendemails(state.workbook);
+    resetAfterAcademicChange_();
+  }
+
+  function resetAfterAcademicChange_() {
+    state.selectedCourse = "all";
+    state.selectedLecturer = "all";
+    state.selectedDay = "all";
+    state.printCourse = "";
+    state.printLecturer = "";
+
+    populateCourseDropdown();
+    populateLecturerDropdown();
+    populatePrintDropdowns();
+
+    document.getElementById("courseFilter").value = state.selectedCourse;
+    document.getElementById("lecturerFilter").value = state.selectedLecturer;
+    document.getElementById("dayFilter").value = state.selectedDay;
+
+    renderDashboard();
+    showMessage("Timetable source updated.");
+  }
+
+  function populatePrintDropdowns() {
+    const courseSelect = document.getElementById("printCourseFilter");
+    const lecturerSelect = document.getElementById("printLecturerFilter");
+
+    if (courseSelect) {
+      const currentCourse = state.printCourse || "";
+      courseSelect.innerHTML = '<option value="">Select Course</option>';
+
+      getActiveCourseList().forEach(function (course) {
+        const option = document.createElement("option");
+        option.value = course;
+        option.textContent = course;
+        courseSelect.appendChild(option);
+      });
+
+      if (currentCourse) {
+        courseSelect.value = currentCourse;
+      }
+    }
+
+    if (lecturerSelect) {
+      const currentLecturer = state.printLecturer || "";
+      lecturerSelect.innerHTML = '<option value="">Select Lecturer</option>';
+
+      getUniqueLecturerNames().forEach(function (lecturer) {
+        const option = document.createElement("option");
+        option.value = lecturer;
+        option.textContent = lecturer;
+        lecturerSelect.appendChild(option);
+      });
+
+      if (currentLecturer) {
+        lecturerSelect.value = currentLecturer;
+      }
+    }
+  }
+
+  function syncPrintControls() {
+    const isCourse = state.printView === "course";
+
+    const courseBtn = document.getElementById("printCourseModeBtn");
+    const lecturerBtn = document.getElementById("printLecturerModeBtn");
+    const courseBox = document.getElementById("printCourseBox");
+    const lecturerBox = document.getElementById("printLecturerBox");
+    const courseSelect = document.getElementById("printCourseFilter");
+    const lecturerSelect = document.getElementById("printLecturerFilter");
+
+    if (courseBtn) courseBtn.classList.toggle("active", isCourse);
+    if (lecturerBtn) lecturerBtn.classList.toggle("active", !isCourse);
+    if (courseBox) courseBox.classList.toggle("hidden-box", !isCourse);
+    if (lecturerBox) lecturerBox.classList.toggle("hidden-box", isCourse);
+
+    if (courseSelect) courseSelect.value = state.printCourse || "";
+    if (lecturerSelect) lecturerSelect.value = state.printLecturer || "";
+  }
+
+  function renderCleanPrintTable() {
+    const title = document.getElementById("cleanPrintTitle");
+    const subtitle = document.getElementById("cleanPrintSubTitle");
+    const totalPeriodsBox = document.getElementById("cleanPrintTotalPeriods");
+    const container = document.getElementById("cleanPrintTableContainer");
+
+    if (!title || !subtitle || !container) return;
+
+    syncPrintControls();
+
+    const isCourse = state.printView === "course";
+    const selectedValue = isCourse ? state.printCourse : state.printLecturer;
+
+    if (!selectedValue) {
+      title.textContent = isCourse ? "Coursewise Time Table" : "Lecturerwise Time Table";
+      subtitle.textContent = isCourse ? "Course: Select Course" : "Name of the Lecturer: Select Lecturer";
+      if (totalPeriodsBox) {
+        totalPeriodsBox.textContent = "0";
+      }
+
+      container.innerHTML = '<div class="empty-state">Select course or lecturer to generate print preview.</div>';
+      return;
+    }
+
+    if (isCourse) {
+      title.textContent = "Coursewise Time Table";
+      subtitle.textContent = "Course: " + selectedValue;
+    } else {
+      title.textContent = "Lecturerwise Time Table";
+      subtitle.textContent = "Name of the Lecturer: " + selectedValue;
+    }
+
+    const rows = getContextRows().filter(function (row) {
+      if (isCourse) {
+        return coursesMatch(row.course, selectedValue);
+      }
+
+      return lecturerCellHasSelectedLecturer(row.lecturer, selectedValue);
+    });
+
+    let printableRows = getRealSubjectRows(rows);
+
+    /*
+     * Lecturerwise clean print:
+     * If the same lecturer handles a combined class for multiple courses
+     * in the same day/period/subject, show it as ONE block and list all courses.
+     */
+    if (!isCourse) {
+      printableRows = mergeLecturerCombinedClasses(printableRows);
+    }
+
+    const totalPeriods = calculatePrintPeriodCount(printableRows);
+
+    if (totalPeriodsBox) {
+      totalPeriodsBox.textContent = String(totalPeriods);
+    }
+
+    if (rows.length === 0) {
+      if (totalPeriodsBox) {
+        totalPeriodsBox.textContent = "0";
+      }
+
+      container.innerHTML = '<div class="empty-state">No timetable records found for selected print option.</div>';
+      return;
+    }
+
+    let html = `
+      <table class="clean-print-table">
+        <thead>
+          <tr>
+            <th class="clean-print-day">DAY</th>
+            ${PERIODS.map(function (period) {
+              return `<th>${escapeHtml(period.label)}</th>`;
+            }).join("")}
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    DAY_LIST.forEach(function (day) {
+      html += `<tr>`;
+      html += `<td class="clean-print-day">${escapeHtml(day)}</td>`;
+
+      PERIODS.forEach(function (period) {
+        const matchedRows = printableRows.filter(function (row) {
+          return row.day === day && row.period === period.label;
+        });
+
+        if (matchedRows.length === 0) {
+          html += `<td class="clean-print-cell"></td>`;
+        } else {
+          html += `
+            <td class="clean-print-cell">
+              ${matchedRows.map(function (row) {
+                return buildCleanPrintBlock(row);
+              }).join("")}
+            </td>
+          `;
+        }
+      });
+
+      html += `</tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+    container.innerHTML = html;
+  }
+
+
+  function calculatePrintPeriodCount(rows) {
+    if (!rows || rows.length === 0) return 0;
+
+    return rows.filter(function (row) {
+      return row && row.subject && !isPlaceholderSubject(row.subject);
+    }).length;
+  }
+
+  function buildCleanPrintBlock(row) {
+    if (!row || isPlaceholderSubject(row.subject)) return "";
+
+    const style = getCleanPrintSubjectStyle(row.subject);
+    const secondLine = state.printView === "lecturer"
+      ? row.course || "Course not mentioned"
+      : row.lecturer || "Lecturer not mentioned";
+
+    return `
+      <div class="clean-print-block" style="--print-subject-color:${style.color}; --print-subject-border:${style.border};">
+        <div class="clean-print-subject">${escapeHtml(row.subject || "Subject not mentioned")}</div>
+        <div class="clean-print-lecturer">${escapeHtml(secondLine)}</div>
+      </div>
+    `;
+  }
+
+  function getCleanPrintSubjectStyle(subject) {
+    const palette = [
+      { color: "#991b1b", border: "#fecaca" },
+      { color: "#1d4ed8", border: "#bfdbfe" },
+      { color: "#047857", border: "#a7f3d0" },
+      { color: "#6d28d9", border: "#ddd6fe" },
+      { color: "#c2410c", border: "#fed7aa" },
+      { color: "#be185d", border: "#fbcfe8" },
+      { color: "#0f766e", border: "#99f6e4" },
+      { color: "#4338ca", border: "#c7d2fe" },
+      { color: "#a16207", border: "#fef08a" },
+      { color: "#334155", border: "#cbd5e1" },
+      { color: "#b91c1c", border: "#fecdd3" },
+      { color: "#166534", border: "#bbf7d0" }
+    ];
+
+    const key = normalizeSubject(subject);
+
+    if (!key) return palette[9];
+
+    let hash = 0;
+
+    for (let i = 0; i < key.length; i++) {
+      hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
+    }
+
+    return palette[Math.abs(hash) % palette.length];
+  }
+
+  function populateCourseDropdown() {
+    const select = document.getElementById("courseFilter");
+
+    if (!select) return;
+
+    const currentValue = state.selectedCourse || "all";
+    const courses = getActiveCourseList();
+
+    select.innerHTML = "";
+
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All Courses";
+    select.appendChild(allOption);
+
+    courses.forEach(function (course) {
+      const option = document.createElement("option");
+      option.value = course;
+      option.textContent = course;
+      select.appendChild(option);
+    });
+
+    select.value = courses.includes(currentValue) ? currentValue : "all";
+    state.selectedCourse = select.value;
+  }
+
+  function populateLecturerDropdown() {
+    const select = document.getElementById("lecturerFilter");
+
+    select.innerHTML = "";
+
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All Lecturers";
+    select.appendChild(allOption);
+
+    getUniqueLecturerNames().forEach(function (lecturer) {
+      const option = document.createElement("option");
+      option.value = lecturer;
+      option.textContent = lecturer;
+      select.appendChild(option);
+    });
+
+    select.value = state.selectedLecturer || "all";
+  }
+
+  function getUniqueLecturerNames() {
+    const lecturerMap = {};
+
+    getContextRows().forEach(function (row) {
+      splitLecturerNames(row.lecturer).forEach(function (name) {
+        const key = normalizePerson(name);
+
+        if (!key) return;
+
+        if (!lecturerMap[key]) {
+          lecturerMap[key] = name;
+        }
+      });
+    });
+
+    return Object.values(lecturerMap).sort(function (a, b) {
+      return a.localeCompare(b);
+    });
+  }
+
+  function splitLecturerNames(value) {
+    const text = cleanCell(value);
+
+    if (!text) return [];
+
+    return text
+      .split("/")
+      .map(function (name) {
+        return cleanLecturerName(name);
+      })
+      .filter(function (name) {
+        return isValidLecturerName(name);
+      });
+  }
+
+  function cleanLecturerName(value) {
+    return cleanCell(value)
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isValidLecturerName(value) {
+    const name = cleanCell(value);
+    const normalized = normalizePerson(name);
+
+    if (!normalized) return false;
+
+    const invalidNames = [
+      "------",
+      "-----",
+      "---",
+      "--",
+      "-",
+      "name of the lecturer",
+      "select lecturer",
+      "select teacher",
+      "teacher name",
+      "lecturer name",
+      "not mentioned",
+      "nil",
+      "na"
+    ];
+
+    return !invalidNames.includes(name.toLowerCase()) &&
+           !invalidNames.includes(normalized);
+  }
+
+  function populateDayDropdown() {
+    const select = document.getElementById("dayFilter");
+
+    select.innerHTML = "";
+
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All Days";
+    select.appendChild(allOption);
+
+    DAY_LIST.forEach(function (day) {
+      const option = document.createElement("option");
+      option.value = day;
+      option.textContent = day;
+      select.appendChild(option);
+    });
+
+    select.value = "all";
+  }
+
+  function handleCourseChange() {
+    state.selectedCourse = document.getElementById("courseFilter").value || "all";
+    renderDashboard();
+    animateTimetableSections();
+  }
+
+  function handleLecturerChange() {
+    state.selectedLecturer = document.getElementById("lecturerFilter").value || "all";
+    renderDashboard();
+    animateTimetableSections();
+  }
+
+  function handleDayChange() {
+    state.selectedDay = document.getElementById("dayFilter").value || "all";
+    renderDashboard();
+    animateTimetableSections();
+  }
+
+  function loadData(showToast) {
+    if (showToast) {
+      showMessage("Refreshing timetable...");
+    }
+
+    callBackend("getDashboardData")
+      .then(function (data) {
+        try {
+          state.workbook = data;
+          state.syllabusLinks = {};
+          state.courseMaster = buildCourseMasterRows();
+          updateAcademicDropdowns();
+          refreshAcademicContext();
+          state.rows = buildRowsFromSendemails(data);
+
+          populateCourseDropdown();
+          populateLecturerDropdown();
+          populatePrintDropdowns();
+          renderDashboard();
+          hideMessage();
+        } catch (err) {
+          console.error(err);
+          showLoadError("Dashboard rendering error: " + err.message);
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+        showLoadError("Unable to load timetable. Please check Apps Script Web App URL, API patch, and deployment access.");
+      });
+  }
+
+  function showLoadError(message) {
+    document.getElementById("timetableContainer").innerHTML = `
+      <div class="empty-state">${escapeHtml(message)}</div>
+    `;
+
+    document.getElementById("cardsContainer").innerHTML = `
+      <div class="empty-state">${escapeHtml(message)}</div>
+    `;
+
+    showMessage(message);
+  }
+
+  function manualRefresh() {
+    loadData(true);
+  }
+
+  function buildRowsFromSendemails(data) {
+    const sheet = getSheet(getCurrentSourceSheetName());
+
+    if (!sheet || !sheet.values || sheet.values.length < 2) {
+      return [];
+    }
+
+    return sheet.values.slice(1)
+      .map(function (row, index) {
+        const originalTime = cleanCell(row[1]);
+        const periodLabel = getPeriodLabelFromTime(originalTime);
+        const rawSyllabusUrl = cleanCell(row[6]);
+
+        return {
+          rowNumber: index + 2,
+          day: normalizeDay(row[0]),
+          originalTime: originalTime,
+          period: periodLabel,
+          course: cleanCell(row[2]),
+          subject: cleanCell(row[3]),
+          lecturer: cleanCell(row[4]),
+          email: cleanCell(row[5]),
+          syllabusUrl: normalizeSyllabusUrl(rawSyllabusUrl),
+          rawSyllabusUrl: rawSyllabusUrl,
+          semester: cleanCell(row[7])
+        };
+      })
+      .map(function (row) {
+        row.isPlaceholderSubject = isPlaceholderSubject(row.subject);
+        return row;
+      })
+      .filter(function (row) {
+        const isHeader =
+          row.day.toLowerCase() === "day" ||
+          row.course.toLowerCase() === "class" ||
+          row.subject.toLowerCase() === "subject" ||
+          row.lecturer.toLowerCase() === "teacher";
+
+        return !isHeader && (row.day || row.period || row.course || row.subject || row.lecturer);
+      });
+  }
+
+  function isPlaceholderSubject(value) {
+    const subject = cleanCell(value);
+    const normalized = subject
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+
+    return normalized === "selectsubject" ||
+           normalized === "selectasubject" ||
+           normalized === "noselectedsubject" ||
+           normalized === "noclass" ||
+           normalized === "na" ||
+           normalized === "n/a";
+  }
+
+  function getRealSubjectRows(rows) {
+    return (rows || []).filter(function (row) {
+      return row && row.subject && !isPlaceholderSubject(row.subject);
+    });
+  }
+
+  function renderDashboard() {
+    updatePageUI();
+    updateViewUI();
+    updateSelectionTitle();
+    renderTimetable();
+    renderCards();
+    updateWorkloadBox();
+    updateHomeStats();
+    updateHolidayNotice();
+    updateTeacherLeaveNotice();
+    renderAdminReports();
+    renderCleanPrintTable();
+    updateSyncTime();
+  }
+
+  function updatePageUI() {
+    const isHome = state.activePage === "home";
+    const isDashboard = state.activePage === "dashboard";
+    const isPrint = state.activePage === "print";
+
+    const academicSelector = document.getElementById("academicSelectorCard");
+
+    if (academicSelector) {
+      academicSelector.classList.toggle("hidden-box", isHome);
+    }
+
+    document.getElementById("homeSection").classList.toggle("hidden-box", !isHome);
+    document.getElementById("viewSwitchCard").classList.toggle("hidden-box", !isDashboard);
+    document.getElementById("controlPanel").classList.toggle("hidden-box", !isDashboard);
+    document.getElementById("selectedCard").classList.toggle("hidden-box", !isDashboard);
+    document.getElementById("timetableSection").classList.toggle("hidden-box", !isDashboard);
+    document.getElementById("cardSection").classList.toggle("hidden-box", !isDashboard);
+    document.getElementById("printSection").classList.toggle("hidden-box", !isPrint);
+
+    document.getElementById("homeBtn").classList.toggle("active", isHome);
+    document.getElementById("navCourseBtn").classList.toggle("active", isDashboard && state.activeView === "course");
+    document.getElementById("navLecturerBtn").classList.toggle("active", isDashboard && state.activeView === "lecturer");
+    document.getElementById("printBtn").classList.toggle("active", isPrint);
+  }
+
+  function updateHomeStats() {
+    const contextRows = getRealSubjectRows(getContextRows());
+    const courses = getActiveCourseList();
+    const lecturers = getUniqueLecturerNames();
+
+    document.getElementById("homeTotalClasses").textContent = contextRows.length;
+    document.getElementById("homeTotalCourses").textContent = courses.length;
+    document.getElementById("homeTotalLecturers").textContent = lecturers.length;
+    document.getElementById("homeTodayName").textContent = getTodayName();
+  }
+
+  function updateWorkloadBox() {
+    const workloadBox = document.getElementById("workloadBox");
+    const workloadLabel = document.getElementById("workloadLabel");
+    const weeklyWorkload = document.getElementById("weeklyWorkload");
+
+    if (!workloadBox || !workloadLabel || !weeklyWorkload) return;
+
+    if (state.activeView !== "lecturer" || state.activePage === "home") {
+      workloadBox.classList.add("hidden-box");
+      return;
+    }
+
+    workloadBox.classList.remove("hidden-box");
+
+    let workloadRows = sortRows(getRealSubjectRows(getFilteredRows()));
+
+    workloadRows = mergeLecturerCombinedClasses(workloadRows);
+
+    const workloadCount = workloadRows.length;
+
+    if (state.selectedLecturer === "all") {
+      workloadLabel.textContent = "Visible Lecturer Slots";
+    } else if (state.selectedDay === "all") {
+      workloadLabel.textContent = "Total Workload / Week";
+    } else {
+      workloadLabel.textContent = "Workload / Selected Day";
+    }
+
+    weeklyWorkload.textContent =
+      workloadCount + (workloadCount === 1 ? " Hour" : " Hours");
+  }
+
+  function updateViewUI() {
+    const isCourse = state.activeView === "course";
+
+    document.getElementById("courseViewBtn").classList.toggle("active", isCourse);
+    document.getElementById("lecturerViewBtn").classList.toggle("active", !isCourse);
+
+    document.getElementById("courseFilterBox").classList.toggle("hidden-box", !isCourse);
+    document.getElementById("lecturerFilterBox").classList.toggle("hidden-box", isCourse);
+
+    document.querySelector(".filter-row").classList.toggle("lecturer-mode", !isCourse);
+
+    document.getElementById("filterHeading").textContent = isCourse ? "Coursewise Filters" : "Lecturerwise Filters";
+    document.getElementById("filterHelp").textContent = isCourse
+      ? "By default, the dashboard opens with all courses and all days."
+      : "Lecturer dropdown shows individual names only. Combined practical lecturers are still reflected in each lecturer's timetable.";
+
+    if (isCourse) {
+      const courseTitle = state.selectedCourse === "all" ? "All Courses" : state.selectedCourse;
+      document.getElementById("tableTitle").textContent = "Coursewise Time Table - " + courseTitle;
+    } else {
+      document.getElementById("tableTitle").textContent = "Lecturerwise Time Table";
+    }
+    document.getElementById("tableHelp").textContent = isCourse
+      ? "Days are shown vertically and class periods are shown horizontally."
+      : "Select one lecturer to view classes, including combined practicals where that lecturer is one of the lecturers.";
+  }
+
+  function updateSelectionTitle() {
+    const dayText = state.selectedDay === "all" ? "All Days" : state.selectedDay;
+
+    if (state.activeView === "course") {
+      const courseText = state.selectedCourse === "all" ? "All Courses" : state.selectedCourse;
+      document.getElementById("selectedTitle").textContent = courseText + " | " + dayText;
+    } else {
+      const lecturerText = state.selectedLecturer === "all" ? "All Lecturers" : state.selectedLecturer;
+      document.getElementById("selectedTitle").textContent = lecturerText + " | " + dayText;
+    }
+  }
+
+  function updateSyncTime() {
+    if (state.workbook && state.workbook.updatedAt) {
+      document.getElementById("updatedAt").textContent = state.workbook.updatedAt;
+    }
+  }
+
+  function updateHolidayNotice() {
+    const info = getTodayHolidayInfo();
+    const homeNotice = document.getElementById("homeHolidayNotice");
+
+    const message = info.isHoliday
+      ? "Holiday Notice: Today is " + info.name + "."
+      : "Holiday Notice: No holiday marked for today.";
+
+    const className = info.isHoliday
+      ? "notice-card holiday-notice"
+      : "notice-card neutral-notice";
+
+    if (homeNotice) {
+      homeNotice.className = className;
+      homeNotice.textContent = message;
+    }
+  }
+
+  function updateTeacherLeaveNotice() {
+    const homeLeaveNotice = document.getElementById("homeTeacherLeaveNotice");
+
+    const leaveMap = getTeachersOnLeaveToday();
+    const leaveNames = Object.values(leaveMap);
+
+    let message = "";
+    let className = "";
+
+    if (leaveNames.length > 0) {
+      message = "Lecturers on Leave Today: " + leaveNames.join(", ");
+      className = "notice-card leave-summary-card";
+    } else {
+      message = "Lecturers on Leave Today: No lecturers marked on leave.";
+      className = "notice-card leave-summary-card no-leave";
+    }
+
+    if (homeLeaveNotice) {
+      homeLeaveNotice.className = className;
+      homeLeaveNotice.textContent = message;
+    }
+  }
+
+  function getTodayHolidayInfo() {
+    const sheet = getSheet("Holidays");
+    const today = new Date();
+
+    if (!sheet || !sheet.values || sheet.values.length === 0) {
+      return { isHoliday: false, name: "No holiday" };
+    }
+
+    for (let i = 0; i < sheet.values.length; i++) {
+      const row = sheet.values[i];
+      const dateParts = parseDateParts(row[0]);
+
+      if (!dateParts) continue;
+
+      if (
+        dateParts.year === today.getFullYear() &&
+        dateParts.month === today.getMonth() + 1 &&
+        dateParts.day === today.getDate()
+      ) {
+        return {
+          isHoliday: true,
+          name: cleanCell(row[1]) || "Holiday"
+        };
+      }
+    }
+
+    return { isHoliday: false, name: "No holiday" };
+  }
+
+  function getTeachersOnLeaveToday() {
+    const sheet = getSheet("TeacherLeaves");
+    const today = new Date();
+    const leaveMap = {};
+
+    if (!sheet || !sheet.values || sheet.values.length < 2) {
+      return leaveMap;
+    }
+
+    const header = sheet.values[0] || [];
+    let todayCol = -1;
+
+    for (let c = 1; c < header.length; c++) {
+      const parts = parseDateParts(header[c]);
+
+      if (!parts) continue;
+
+      if (
+        parts.year === today.getFullYear() &&
+        parts.month === today.getMonth() + 1 &&
+        parts.day === today.getDate()
+      ) {
+        todayCol = c;
+        break;
+      }
+    }
+
+    if (todayCol === -1) {
+      return leaveMap;
+    }
+
+    for (let r = 1; r < sheet.values.length; r++) {
+      const lecturerName = cleanCell(sheet.values[r][0]);
+      const leaveValue = cleanCell(sheet.values[r][todayCol]);
+
+      if (!lecturerName || !isTruthyLeaveValue(leaveValue)) continue;
+
+      splitLecturerNames(lecturerName).forEach(function (name) {
+        leaveMap[normalizePerson(name)] = name;
+      });
+    }
+
+    return leaveMap;
+  }
+
+  function isTruthyLeaveValue(value) {
+    const text = cleanCell(value).toLowerCase();
+
+    return text === "true" ||
+           text === "yes" ||
+           text === "y" ||
+           text === "1" ||
+           text === "leave" ||
+           text === "on leave" ||
+           text === "✓" ||
+           text === "checked";
+  }
+
+  function getLeaveNamesForRow(row) {
+    /*
+     * TeacherLeaves is date-based.
+     * So the leave badge should appear only on today's weekday row.
+     * Example: if KJ is on leave on Wednesday, the badge should appear only in Wednesday classes,
+     * not on Monday, Tuesday, Thursday, Friday or Saturday.
+     */
+    if (!row || normalizeDay(row.day) !== getTodayName()) {
+      return [];
+    }
+
+    const leaveMap = getTeachersOnLeaveToday();
+    const names = [];
+
+    splitLecturerNames(row.lecturer).forEach(function (name) {
+      const key = normalizePerson(name);
+
+      if (leaveMap[key]) {
+        names.push(leaveMap[key]);
+      }
+    });
+
+    return names;
+  }
+
+  function buildLeaveBadge(row) {
+    const names = getLeaveNamesForRow(row);
+
+    if (names.length === 0) return "";
+
+    return `
+      <div class="leave-badge">
+        On Leave Today: ${escapeHtml(names.join(", "))}
+      </div>
+    `;
+  }
+
+  function getFilteredRows() {
+    return getContextRows().filter(function (row) {
+      const dayOk =
+        state.selectedDay === "all" ||
+        row.day === state.selectedDay;
+
+      if (state.activeView === "course") {
+        const courseOk =
+          state.selectedCourse === "all" ||
+          coursesMatch(row.course, state.selectedCourse);
+
+        return courseOk && dayOk;
+      }
+
+      const lecturerOk =
+        state.selectedLecturer === "all" ||
+        lecturerCellHasSelectedLecturer(row.lecturer, state.selectedLecturer);
+
+      return lecturerOk && dayOk;
+    });
+  }
+
+  function lecturerCellHasSelectedLecturer(cellValue, selectedLecturer) {
+    const selectedKey = normalizePerson(selectedLecturer);
+
+    if (!selectedKey || selectedLecturer === "all") return true;
+
+    return splitLecturerNames(cellValue).some(function (name) {
+      return normalizePerson(name) === selectedKey;
+    });
+  }
+
+  function getVisibleDays() {
+    if (state.selectedDay !== "all") {
+      return [state.selectedDay];
+    }
+
+    return DAY_LIST;
+  }
+
+  function renderTimetable() {
+    const container = document.getElementById("timetableContainer");
+    const rows = getFilteredRows();
+    const visibleDays = getVisibleDays();
+
+    if (rows.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          No timetable records found for the selected filter.
+        </div>
+      `;
+      return;
+    }
+
+    let tableHtml = `
+      <table>
+        <thead>
+          <tr>
+            <th>DAY</th>
+            ${PERIODS.map(function (period) {
+              return `<th>${escapeHtml(period.label)}</th>`;
+            }).join("")}
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    visibleDays.forEach(function (day) {
+      tableHtml += `<tr>`;
+      tableHtml += `<td class="day-cell">${escapeHtml(day)}</td>`;
+
+      PERIODS.forEach(function (period) {
+        const matchedClasses = rows.filter(function (row) {
+          return row.day === day && row.period === period.label;
+        });
+
+        const realClasses = getRealSubjectRows(matchedClasses);
+        const displayClasses = getDisplayClasses(realClasses);
+
+        if (displayClasses.length > 0) {
+          tableHtml += `
+            <td class="period-cell">
+              ${displayClasses.map(function (matched) {
+                return buildClassBlock(matched);
+              }).join("")}
+            </td>
+          `;
+        } else if (matchedClasses.length > 0) {
+          tableHtml += `
+            <td class="period-cell blank-period"></td>
+          `;
+        } else {
+          tableHtml += `
+            <td class="period-cell">
+              <div class="empty-period">No class</div>
+            </td>
+          `;
+        }
+      });
+
+      tableHtml += `</tr>`;
+    });
+
+    tableHtml += `
+        </tbody>
+      </table>
+    `;
+
+    container.innerHTML = tableHtml;
+  }
+
+  function getDisplayClasses(classes) {
+    if (state.activeView !== "lecturer") {
+      return classes;
+    }
+
+    return mergeLecturerCombinedClasses(classes);
+  }
+
+  function mergeLecturerCombinedClasses(classes) {
+    const grouped = {};
+
+    classes.forEach(function (row) {
+      const activeLecturerForGrouping =
+        state.activePage === "print"
+          ? state.printLecturer
+          : state.selectedLecturer;
+
+      const lecturerKeyForGrouping =
+        activeLecturerForGrouping && activeLecturerForGrouping !== "all"
+          ? normalizePerson(activeLecturerForGrouping)
+          : normalizePerson(row.lecturer);
+
+      /*
+       * Do not include course or syllabusUrl in this key.
+       * This allows one combined class to appear once,
+       * while all courses are collected and shown together.
+       */
+      const key = [
+        row.day,
+        row.period,
+        lecturerKeyForGrouping,
+        normalizeSubject(row.subject)
+      ].join("|");
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          ...row,
+          combinedCourses: [],
+          combinedSemesters: [],
+          combinedRows: [],
+          isCombinedClass: false
+        };
+      }
+
+      grouped[key].combinedCourses.push(row.course);
+      grouped[key].combinedSemesters.push(row.semester);
+      grouped[key].combinedRows.push(row);
+    });
+
+    return Object.values(grouped).map(function (group) {
+      const uniqueCourses = getUniqueValues(group.combinedCourses);
+      const uniqueSemesters = getUniqueValues(group.combinedSemesters);
+
+      return {
+        ...group,
+        course: uniqueCourses.join(" + "),
+        semester: uniqueSemesters.join(" + "),
+        isCombinedClass: uniqueCourses.length > 1 || group.combinedRows.length > 1
+      };
+    });
+  }
+
+  function buildClassBlock(row) {
+    if (!row || isPlaceholderSubject(row.subject)) return "";
+
+    const subjectStyle = getSubjectStyle(row.subject);
+    const syllabusButton = buildSubjectButton(row, "subject-link");
+    const combinedButton = row.isCombinedClass ? buildCombinedClassButton() : "";
+    const leaveBadge = buildLeaveBadge(row);
+
+    let extraLine = "";
+    let lecturerLine = "";
+
+    if (state.activeView === "course") {
+      extraLine = state.selectedCourse === "all"
+        ? `<div class="course-text">${escapeHtml(row.course || "")}</div>`
+        : "";
+
+      lecturerLine = `<div class="lecturer-text">${escapeHtml(row.lecturer || "")}</div>`;
+    } else {
+      /*
+       * Lecturerwise table:
+       * The selected lecturer is already shown in the dropdown/current selection.
+       * So inside each class cell, show Course name below Subject, not Lecturer name.
+       */
+      extraLine = `<div class="course-text">${escapeHtml(row.course || "")}</div>`;
+      lecturerLine = "";
+    }
+
+    return `
+      <div class="class-block" style="--subject-color:${subjectStyle.color}; --subject-bg:${subjectStyle.bg};">
+        ${syllabusButton}
+        ${combinedButton}
+        ${extraLine}
+        ${lecturerLine}
+        <div class="semester-text">${escapeHtml(row.semester || "")}</div>
+        ${leaveBadge}
+        <span class="syllabus-small">${row.syllabusUrl ? "Click subject for syllabus" : "Syllabus not linked"}</span>
+      </div>
+    `;
+  }
+
+  function buildCombinedClassButton() {
+    return `
+      <div>
+        <button
+          type="button"
+          style="
+            margin: 7px 0 3px;
+            padding: 5px 10px;
+            border: 1px solid #f9a8d4;
+            background: #fdf2f8;
+            color: #db2777;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+          "
+        >
+          Combined Class
+        </button>
+      </div>
+    `;
+  }
+
+  function renderCards() {
+    const container = document.getElementById("cardsContainer");
+    let rows = sortRows(getRealSubjectRows(getFilteredRows()));
+
+    if (state.activeView === "lecturer") {
+      rows = mergeLecturerCombinedClasses(rows);
+    }
+
+    if (rows.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          No class cards available for the selected filter.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = rows.map(function (row) {
+      if (!row || isPlaceholderSubject(row.subject)) return "";
+
+      const subjectStyle = getSubjectStyle(row.subject);
+      const syllabusButton = buildSubjectButton(row, "subject-card-link");
+      const combinedButton = row.isCombinedClass ? buildCombinedClassButton() : "";
+      const leaveBadge = buildLeaveBadge(row);
+
+      return `
+        <article class="class-card" style="--subject-color:${subjectStyle.color}; --subject-bg:${subjectStyle.bg};">
+          <div class="class-top">
+            <span class="day-pill">${escapeHtml(row.day || "DAY")}</span>
+            <span class="time-text">${escapeHtml(row.period || row.originalTime || "")}</span>
+          </div>
+
+          ${syllabusButton}
+          ${combinedButton}
+
+          <p class="meta"><strong>Course:</strong> ${escapeHtml(row.course || "Not mentioned")}</p>
+          ${state.activeView === "course" ? `<p class="meta"><strong>Lecturer:</strong> ${escapeHtml(row.lecturer || "Not mentioned")}</p>` : ""}
+          <p class="meta"><strong>Semester:</strong> ${escapeHtml(row.semester || "Not mentioned")}</p>
+          ${leaveBadge}
+          <p class="meta"><strong>Syllabus:</strong> ${row.syllabusUrl ? "Click subject name" : "Not linked"}</p>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function buildSubjectButton(row, className) {
+    if (!row || isPlaceholderSubject(row.subject)) return "";
+
+    const key = makeSyllabusKey(row);
+    const subjectText = escapeHtml(row.subject || "Subject not mentioned");
+
+    if (row.syllabusUrl) {
+      state.syllabusLinks[key] = row.syllabusUrl;
+    }
+
+    const noSyllabusClass = row.syllabusUrl ? "" : " no-syllabus";
+
+    return `
+      <button
+        type="button"
+        class="${className}${noSyllabusClass}"
+        data-syllabus-key="${escapeHtml(key)}"
+        data-subject-name="${escapeHtml(row.subject || "this subject")}"
+      >
+        ${subjectText}
+      </button>
+    `;
+  }
+
+  function makeSyllabusKey(row) {
+    return [
+      row.rowNumber,
+      row.day,
+      row.period,
+      row.course,
+      row.lecturer,
+      row.subject
+    ].join("_")
+      .replace(/[^a-zA-Z0-9_]/g, "_");
+  }
+
+  function normalizeSyllabusUrl(value) {
+    const url = cleanCell(value);
+
+    if (!url) return "";
+
+    const fileIdMatch = url.match(/[-\w]{25,}/);
+
+    if (fileIdMatch && fileIdMatch[0]) {
+      return "https://drive.google.com/file/d/" + fileIdMatch[0] + "/view";
+    }
+
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+
+    return "";
+  }
+
+  function sortRows(rows) {
+    const dayOrder = {
+      "MONDAY": 1,
+      "TUESDAY": 2,
+      "WEDNESDAY": 3,
+      "THURSDAY": 4,
+      "FRIDAY": 5,
+      "SATURDAY": 6
+    };
+
+    return rows.sort(function (a, b) {
+      const dayA = dayOrder[a.day] || 99;
+      const dayB = dayOrder[b.day] || 99;
+
+      if (dayA !== dayB) return dayA - dayB;
+
+      return getPeriodIndex(a.period) - getPeriodIndex(b.period);
+    });
+  }
+
+  function getPeriodIndex(periodLabel) {
+    const index = PERIODS.findIndex(function (period) {
+      return period.label === periodLabel;
+    });
+
+    return index === -1 ? 99 : index;
+  }
+
+  function getSubjectStyle(subject) {
+    const key = normalizeSubject(subject);
+
+    if (!key) {
+      return SUBJECT_COLORS[9];
+    }
+
+    let hash = 0;
+
+    for (let i = 0; i < key.length; i++) {
+      hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
+    }
+
+    const index = Math.abs(hash) % SUBJECT_COLORS.length;
+
+    return SUBJECT_COLORS[index];
+  }
+
+  function normalizeSubject(value) {
+    return cleanCell(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getPeriodLabelFromTime(value) {
+    const text = cleanCell(value);
+
+    if (!text) return "";
+
+    const rangePeriod = getPeriodFromRangeText(text);
+    if (rangePeriod) return rangePeriod;
+
+    const startMinutes = extractStartMinutes(text);
+
+    if (startMinutes === null) {
+      return text;
+    }
+
+    const matchedPeriod = PERIODS.find(function (period) {
+      return period.startMinutes === startMinutes ||
+             (startMinutes >= period.startMinutes && startMinutes < period.endMinutes);
+    });
+
+    return matchedPeriod ? matchedPeriod.label : text;
+  }
+
+  function getPeriodFromRangeText(value) {
+    const text = cleanCell(value)
+      .toUpperCase()
+      .replace(/\s+/g, "")
+      .replace(/–/g, "-")
+      .replace(/—/g, "-")
+      .replace(/TO/g, "-")
+      .replace(/\./g, ":");
+
+    if (text.includes("10:00AM") && text.includes("11:00AM")) {
+      return "10.00AM - 11.00AM";
+    }
+
+    if (text.includes("11:00AM") && (text.includes("12:00PM") || text.includes("12:00AM"))) {
+      return "11.00AM - 12.00PM";
+    }
+
+    if (text.includes("12:00PM") && text.includes("1:00PM")) {
+      return "12.00PM - 1.00PM";
+    }
+
+    if ((text.includes("2:00PM") || text.includes("02:00PM") || text.includes("14:00")) && (text.includes("3:00PM") || text.includes("03:00PM") || text.includes("15:00"))) {
+      return "2.00PM - 3.00PM";
+    }
+
+    if ((text.includes("3:00PM") || text.includes("03:00PM") || text.includes("15:00")) && (text.includes("4:00PM") || text.includes("04:00PM") || text.includes("16:00"))) {
+      return "3.00PM - 4.00PM";
+    }
+
+    if ((text.includes("4:00PM") || text.includes("04:00PM") || text.includes("16:00")) && (text.includes("5:00PM") || text.includes("05:00PM") || text.includes("17:00"))) {
+      return "4.00PM - 5.00PM";
+    }
+
+    return "";
+  }
+
+  function extractStartMinutes(value) {
+    let text = cleanCell(value).toUpperCase();
+
+    text = text
+      .replace(/\s+/g, " ")
+      .replace(/\./g, ":")
+      .trim();
+
+    const timeMatch = text.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/);
+
+    if (timeMatch) {
+      let hour = Number(timeMatch[1]);
+      const minute = Number(timeMatch[2]);
+      const meridian = timeMatch[3] || "";
+
+      if (meridian === "PM" && hour !== 12) {
+        hour += 12;
+      }
+
+      if (meridian === "AM" && hour === 12) {
+        hour = 0;
+      }
+
+      if (!meridian && hour >= 2 && hour <= 5) {
+        hour += 12;
+      }
+
+      return hour * 60 + minute;
+    }
+
+    const simpleMatch = text.match(/\b(\d{1,2})\s*(AM|PM)\b/);
+
+    if (simpleMatch) {
+      let hour = Number(simpleMatch[1]);
+      const meridian = simpleMatch[2];
+
+      if (meridian === "PM" && hour !== 12) {
+        hour += 12;
+      }
+
+      if (meridian === "AM" && hour === 12) {
+        hour = 0;
+      }
+
+      return hour * 60;
+    }
+
+    return null;
+  }
+
+  function normalizeDay(value) {
+    const text = cleanCell(value).toUpperCase();
+
+    if (text.includes("MON")) return "MONDAY";
+    if (text.includes("TUE")) return "TUESDAY";
+    if (text.includes("WED")) return "WEDNESDAY";
+    if (text.includes("THU")) return "THURSDAY";
+    if (text.includes("FRI")) return "FRIDAY";
+    if (text.includes("SAT")) return "SATURDAY";
+
+    return text;
+  }
+
+  function getTodayName() {
+    return [
+      "SUNDAY",
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY"
+    ][new Date().getDay()];
+  }
+
+  function parseDateParts(value) {
+    const text = cleanCell(value);
+
+    if (!text) return null;
+
+    let match = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+
+    if (match) {
+      return {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3])
+      };
+    }
+
+    match = text.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+
+    if (match) {
+      return {
+        day: Number(match[1]),
+        month: Number(match[2]),
+        year: Number(match[3])
+      };
+    }
+
+    const parsed = new Date(text);
+
+    if (!isNaN(parsed.getTime())) {
+      return {
+        year: parsed.getFullYear(),
+        month: parsed.getMonth() + 1,
+        day: parsed.getDate()
+      };
+    }
+
+    return null;
+  }
+
+  function getSheet(sheetName) {
+    if (!state.workbook || !state.workbook.sheets) return null;
+
+    return state.workbook.sheets.find(function (sheet) {
+      return sheet.name === sheetName;
+    });
+  }
+
+  function getUniqueValues(values) {
+    return [...new Set(values.map(cleanCell).filter(Boolean))]
+      .sort(function (a, b) {
+        return a.localeCompare(b);
+      });
+  }
+
+  function cleanCell(value) {
+    return String(value || "")
+      .replace(/\u00A0/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function coursesMatch(actualCourse, selectedCourse) {
+    const actual = normalizeCourse(actualCourse);
+    const selected = normalizeCourse(selectedCourse);
+
+    if (!actual || !selected) return false;
+
+    return actual === selected;
+  }
+
+  function normalizeCourse(value) {
+    return cleanCell(value)
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/\./g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function normalizePerson(value) {
+    return cleanCell(value)
+      .toLowerCase()
+      .replace(/\./g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function showMessage(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(function () {
+      toast.classList.remove("show");
+    }, 2600);
+  }
+
+  function hideMessage() {
+    const toast = document.getElementById("toast");
+
+    setTimeout(function () {
+      toast.classList.remove("show");
+    }, 800);
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+    </script>
+  
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("./service-worker.js").catch(function (error) {
+            console.log("Service worker registration skipped:", error);
+          });
+        });
+      }
+    </script>
+
+  </body>
+</html>
