@@ -4,19 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Time Time Table Dashboard</title>
-    <!-- Mobile Home Screen T Icon Support - No Service Worker -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#166534">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Time Table">
-    <meta name="apple-mobile-web-app-title" content="Time Table">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%0A%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%2296%22%20fill%3D%22%23166534%22/%3E%0A%3Crect%20x%3D%2266%22%20y%3D%2266%22%20width%3D%22380%22%20height%3D%22380%22%20rx%3D%2284%22%20fill%3D%22%23fff%22/%3E%0A%3Crect%20x%3D%2266%22%20y%3D%2266%22%20width%3D%22380%22%20height%3D%22112%22%20rx%3D%2284%22%20fill%3D%22%2315803d%22/%3E%0A%3Cpath%20d%3D%22M156%20218h200v58h-70v158h-60V276h-70z%22%20fill%3D%22%23166534%22/%3E%0A%3C/svg%3E">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-
     <style>
 :root {
     --bg: #f5f7fb;
@@ -2124,331 +2111,8 @@
       display: none !important;
     }
   }
-    
-/* =========================================================
-   MOBILE PORTRAIT REFINEMENT - GitHub Single File Version
-   Added for better mobile viewing
-   ========================================================= */
-
-@media screen and (max-width: 600px) and (orientation: portrait) {
-  body {
-    overflow-x: hidden;
-  }
-
-  .app-shell {
-    width: 100%;
-    padding: 10px;
-  }
-
-  .hero {
-    padding: 16px 14px;
-    gap: 12px;
-    border-radius: 18px;
-  }
-
-  .hero-left h1 {
-    font-size: 1.45rem;
-    line-height: 1.2;
-  }
-
-  .hero-left .subtitle,
-  .subtitle {
-    font-size: 0.82rem;
-    line-height: 1.35;
-  }
-
-  .eyebrow {
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-  }
-
-  .sync-card {
-    width: 100%;
-    padding: 10px 12px;
-  }
-
-  .sync-label {
-    font-size: 0.68rem;
-  }
-
-  .sync-time {
-    font-size: 0.75rem;
-  }
-
-  /* Navigation buttons - smaller and mobile friendly */
-  .nav-card {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 7px;
-    padding: 8px;
-    border-radius: 16px;
-  }
-
-  .nav-btn {
-    min-height: 36px;
-    padding: 8px 6px;
-    font-size: 0.68rem;
-    line-height: 1.15;
-    border-radius: 11px;
-    white-space: normal;
-    text-align: center;
-  }
-
-  .today-btn,
-  .print-btn,
-  .admin-btn {
-    font-size: 0.66rem;
-  }
-
-  /* Hide Source Sheet display on mobile portrait */
-  .source-chip {
-    display: none !important;
-  }
-
-  .academic-selector-card {
-    padding: 14px;
-    border-radius: 18px;
-  }
-
-  .academic-selector-header {
-    gap: 8px;
-  }
-
-  .academic-selector-header h2 {
-    font-size: 1rem;
-    line-height: 1.25;
-  }
-
-  .academic-selector-header p {
-    font-size: 0.76rem;
-    line-height: 1.35;
-  }
-
-  .academic-filter-row,
-  .filter-row,
-  .print-filter-row,
-  .admin-form-grid,
-  .admin-entry-grid,
-  .admin-report-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-  }
-
-  label {
-    font-size: 0.72rem;
-  }
-
-  select,
-  input,
-  .admin-input {
-    width: 100%;
-    min-height: 38px;
-    font-size: 0.78rem;
-  }
-
-  .home-hero-card,
-  .section-card,
-  .control-panel,
-  .selected-course-card,
-  .print-control-card,
-  .clean-print-area {
-    padding: 14px;
-    border-radius: 18px;
-  }
-
-  .home-hero-card h2,
-  .section-title-row h2,
-  .print-control-header h2,
-  .clean-print-title-block h2 {
-    font-size: 1.05rem;
-    line-height: 1.25;
-  }
-
-  .home-hero-card p,
-  .feature-card p,
-  .section-title-row p,
-  .print-control-header p,
-  .clean-print-title-block p {
-    font-size: 0.78rem;
-    line-height: 1.38;
-  }
-
-  .home-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 9px;
-  }
-
-  .home-stat {
-    padding: 12px;
-    border-radius: 14px;
-  }
-
-  .home-stat span {
-    font-size: 0.68rem;
-  }
-
-  .home-stat strong {
-    font-size: 1rem;
-  }
-
-  .home-feature-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .feature-card {
-    padding: 13px;
-    border-radius: 16px;
-  }
-
-  .feature-card h3 {
-    font-size: 0.92rem;
-  }
-
-  .view-switch-card,
-  .print-mode-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 8px;
-  }
-
-  .view-btn {
-    padding: 8px 6px;
-    font-size: 0.7rem;
-    line-height: 1.2;
-    white-space: normal;
-  }
-
-  .control-header,
-  .section-title-row,
-  .print-control-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
-    min-height: 38px;
-    font-size: 0.76rem;
-    padding: 9px 10px;
-  }
-
-  .selected-course-card h2,
-  #selectedTitle,
-  #tableTitle,
-  #cardsTitle {
-    font-size: 1rem;
-    line-height: 1.25;
-    word-break: break-word;
-  }
-
-  .workload-box {
-    width: 100%;
-    justify-content: space-between;
-    padding: 10px 12px;
-  }
-
-  .workload-box span,
-  .workload-box strong {
-    font-size: 0.76rem;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .timetable-table,
-  .clean-print-table {
-    min-width: 720px;
-  }
-
-  .timetable-table th,
-  .timetable-table td,
-  .clean-print-table th,
-  .clean-print-table td {
-    font-size: 0.7rem;
-    padding: 6px 5px;
-  }
-
-  .class-block,
-  .clean-print-class-block {
-    padding: 6px;
-    border-radius: 9px;
-  }
-
-  .subject-button,
-  .class-subject,
-  .clean-print-subject {
-    font-size: 0.72rem;
-    line-height: 1.2;
-  }
-
-  .class-course,
-  .class-lecturer,
-  .clean-print-course,
-  .clean-print-lecturer {
-    font-size: 0.65rem;
-    line-height: 1.2;
-  }
-
-  .card-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .class-card {
-    padding: 12px;
-    border-radius: 16px;
-  }
-
-  .clean-print-period-box {
-    position: static !important;
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-
-  .clean-print-period-box span {
-    font-size: 0.65rem;
-  }
-
-  .clean-print-period-box strong {
-    font-size: 1.1rem;
-  }
-
-  .modal-card {
-    width: calc(100vw - 18px);
-    max-height: 88vh;
-    padding: 14px;
-    border-radius: 18px;
-  }
-
-  .modal-header h2 {
-    font-size: 1rem;
-  }
-
-  .admin-entry-card,
-  .admin-report-card {
-    padding: 13px;
-    border-radius: 16px;
-  }
-
-  .admin-button-row {
-    grid-template-columns: 1fr;
-  }
-
-  .footer {
-    padding: 14px 8px;
-    font-size: 0.72rem;
-  }
-}
-
     </style>
-</head>
+  </head>
 
   <body>
     <div class="app-shell">
@@ -2911,10 +2575,9 @@
 
     <script>
       /*
-       * IMPORTANT:
-       * Paste your deployed Google Apps Script Web App URL below.
-       * Example:
-       * https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxxxxxx/exec
+       * GitHub Frontend Configuration
+       * This URL is your Google Apps Script Web App backend.
+       * It provides live Google Sheet data to the GitHub page.
        */
       window.TIMETABLE_CONFIG = {
         APPS_SCRIPT_API_URL: "https://script.google.com/macros/s/AKfycbwVGzwdnwvN7kFt_d4caYkAhVQejIwj0cZ-kdS2kYK2SgtMSFBQHvtXDXl6mPj8jsCS/exec"
@@ -2923,13 +2586,12 @@
     <script>
 
 /****************************************************
- * GITHUB BACKEND BRIDGE
+ * GITHUB FRONTEND BACKEND BRIDGE
  * --------------------------------------------------
- * This file can run in two modes:
- * 1. Google Apps Script HTML mode: uses google.script.run
- * 2. GitHub Pages mode: uses Apps Script Web App JSONP API
+ * Apps Script direct URL: uses google.script.run
+ * GitHub Pages URL: uses JSONP calls to Apps Script Web App
  *
- * For GitHub Pages, set APPS_SCRIPT_API_URL in index.html.
+ * Do not add service-worker here. This keeps the GitHub frontend live.
  ****************************************************/
 
 function getAppsScriptApiUrl_() {
@@ -2987,7 +2649,7 @@ function jsonpBackendRequest_(apiUrl, params) {
     query.set("callback", callbackName);
 
     const separator = apiUrl.indexOf("?") === -1 ? "?" : "&";
-    const script = document.createElement("script");
+    const requestScript = document.createElement("script");
 
     let completed = false;
 
@@ -3007,8 +2669,8 @@ function jsonpBackendRequest_(apiUrl, params) {
         window[callbackName] = undefined;
       }
 
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
+      if (requestScript && requestScript.parentNode) {
+        requestScript.parentNode.removeChild(requestScript);
       }
     }
 
@@ -3023,16 +2685,15 @@ function jsonpBackendRequest_(apiUrl, params) {
       resolve(response);
     };
 
-    script.onerror = function () {
+    requestScript.onerror = function () {
       cleanup();
-      reject(new Error("Unable to load Apps Script API. Check deployment URL and access permissions."));
+      reject(new Error("Unable to load Apps Script API. Check Web App URL, deployment access, and API patch."));
     };
 
-    script.src = apiUrl + separator + query.toString();
-    document.head.appendChild(script);
+    requestScript.src = apiUrl + separator + query.toString();
+    document.head.appendChild(requestScript);
   });
 }
-
 
 const COURSE_LIST = [
     "B.A Honours (Political Science) Sem II",
@@ -3358,7 +3019,7 @@ const COURSE_LIST = [
       })
       .catch(function (error) {
         console.error(error);
-        setAdminMessage(message, "Login failed. Please check Apps Script API URL and backend deployment.", "error");
+        setAdminMessage(message, "Login failed. Please check Apps Script Web App backend.", "error");
       });
   }
 
@@ -3427,7 +3088,7 @@ const COURSE_LIST = [
       })
       .catch(function (error) {
         console.error(error);
-        setAdminMessage(message, "Holiday save failed. Check Apps Script API backend.", "error");
+        setAdminMessage(message, "Holiday save failed. Check Code.gs functions and Web App deployment.", "error");
       });
   }
 
@@ -3481,7 +3142,7 @@ const COURSE_LIST = [
       })
       .catch(function (error) {
         console.error(error);
-        setAdminMessage(message, "Lecturer leave update failed. Check Apps Script API backend.", "error");
+        setAdminMessage(message, "Lecturer leave update failed. Check Code.gs functions and Web App deployment.", "error");
       });
   }
 
@@ -5391,33 +5052,5 @@ const COURSE_LIST = [
       .replace(/'/g, "&#039;");
   }
     </script>
-  
-    <script>
-      /*
-       * Safety cleanup:
-       * If a previous PWA service-worker version was uploaded, it may cache an old/broken page.
-       * This unregisters it and clears old timetable caches so live Apps Script data loads normally.
-       */
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-          registrations.forEach(function (registration) {
-            registration.unregister();
-          });
-        }).catch(function () {});
-      }
-
-      if ("caches" in window) {
-        caches.keys().then(function (keys) {
-          keys.forEach(function (key) {
-            if (String(key).toLowerCase().includes("time-table") ||
-                String(key).toLowerCase().includes("timetable") ||
-                String(key).toLowerCase().includes("gdc")) {
-              caches.delete(key);
-            }
-          });
-        }).catch(function () {});
-      }
-    </script>
-
   </body>
 </html>
